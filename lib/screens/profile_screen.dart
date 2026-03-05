@@ -155,6 +155,81 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ]),
                           const SizedBox(height: 24),
+                          // Delete Account
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: OutlinedButton.icon(
+                              icon: const Icon(Icons.delete_forever_rounded,
+                                  color: AppColors.danger, size: 20),
+                              label: const Text('Delete Account',
+                                  style: TextStyle(color: AppColors.danger)),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: AppColors.danger),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    backgroundColor: AppColors.cardDark,
+                                    title: const Text('Delete Account',
+                                        style: TextStyle(color: Colors.white)),
+                                    content: const Text(
+                                      'This will permanently delete your account and all your data (assets, liabilities, profile). This cannot be undone.',
+                                      style: TextStyle(color: AppColors.greyText),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: const Text('Delete',
+                                            style: TextStyle(
+                                                color: AppColors.danger)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (ok == true && context.mounted) {
+                                  try {
+                                    await ref.read(authProvider.notifier).deleteAccount();
+                                    if (context.mounted) context.go('/');
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      final msg = e.toString().contains('requires-recent-login')
+                                          ? 'For security, please sign out and sign back in before deleting your account.'
+                                          : 'Failed to delete account. Please try again.';
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => AlertDialog(
+                                          backgroundColor: AppColors.cardDark,
+                                          title: const Text('Error',
+                                              style: TextStyle(color: Colors.white)),
+                                          content: Text(msg,
+                                              style: const TextStyle(color: AppColors.greyText)),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text('OK'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Sign Out
                           SizedBox(
                             width: double.infinity,
                             height: 52,

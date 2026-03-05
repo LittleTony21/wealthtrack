@@ -81,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     IconButton(
                       icon: const Icon(Icons.arrow_back_rounded,
                           color: Colors.white),
-                      onPressed: () => context.go('/auth'),
+                      onPressed: () => context.go('/signin'),
                     ),
                     Expanded(
                       child: Text(

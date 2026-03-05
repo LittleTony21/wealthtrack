@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../config/theme.dart';
 import '../models/user_profile.dart';
+import '../providers/onboarding_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -104,15 +104,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         await ref.read(profileProvider.notifier).update(profile);
         if (mounted) context.go('/dashboard');
       } else {
-        // Came from Welcome → Get Started — not logged in yet, save as pending
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('pending_name', _nameCtrl.text.trim());
-        await prefs.setString('pending_avatar', _avatar);
-        await prefs.setString('pending_pin_enabled', _pinEnabled ?? 'no');
-        await prefs.setString(
-          'pending_pin_code',
-          _pinEnabled == 'yes' ? _pinCtrls.map((c) => c.text).join() : '',
-        );
+        // Came from Welcome → Get Started — not logged in yet, store in memory
+        ref.read(onboardingProvider.notifier).save(
+              name: _nameCtrl.text.trim(),
+              avatar: _avatar,
+              currency: _currency,
+              theme: _theme,
+              pinEnabled: _pinEnabled == 'yes',
+              pinCode: _pinEnabled == 'yes'
+                  ? _pinCtrls.map((c) => c.text).join()
+                  : '',
+            );
         if (mounted) context.go('/auth');
       }
     } finally {

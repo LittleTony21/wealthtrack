@@ -1,47 +1,23 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
-import '../models/user_profile.dart';
 import '../providers/auth_provider.dart';
-import '../providers/onboarding_provider.dart';
 
-class AuthSelectionScreen extends ConsumerStatefulWidget {
-  const AuthSelectionScreen({super.key});
+class SignInSelectionScreen extends ConsumerStatefulWidget {
+  const SignInSelectionScreen({super.key});
 
   @override
-  ConsumerState<AuthSelectionScreen> createState() =>
-      _AuthSelectionScreenState();
+  ConsumerState<SignInSelectionScreen> createState() =>
+      _SignInSelectionScreenState();
 }
 
-class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
+class _SignInSelectionScreenState
+    extends ConsumerState<SignInSelectionScreen> {
   bool _googleLoading = false;
   bool _appleLoading = false;
   String? _error;
-
-  Future<void> _applyPendingOnboardingData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    final onboarding = ref.read(onboardingProvider);
-    final profile = UserProfile(
-      id: user.uid,
-      userName: onboarding.name.isNotEmpty ? onboarding.name : (user.displayName ?? ''),
-      userAvatar: onboarding.avatar,
-      currency: onboarding.currency,
-      theme: onboarding.theme,
-      pinEnabled: onboarding.pinEnabled,
-      pinCode: onboarding.pinCode,
-    );
-    final data = profile.toJson()..remove('id');
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .set(data, SetOptions(merge: true));
-    ref.read(onboardingProvider.notifier).clear();
-  }
 
   Future<void> _signInWithGoogle() async {
     setState(() {
@@ -49,12 +25,12 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
       _error = null;
     });
     try {
-      await ref.read(authProvider.notifier).signInWithGoogle();
-      await _applyPendingOnboardingData();
+      await ref.read(authProvider.notifier).signInOnlyWithGoogle();
       if (mounted) context.go('/dashboard');
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'Google sign in failed. Please try again.');
+        final msg = e.toString().replaceFirst('Exception: ', '');
+        setState(() => _error = msg);
       }
     } finally {
       if (mounted) setState(() => _googleLoading = false);
@@ -67,12 +43,12 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
       _error = null;
     });
     try {
-      await ref.read(authProvider.notifier).signInWithApple();
-      await _applyPendingOnboardingData();
+      await ref.read(authProvider.notifier).signInOnlyWithApple();
       if (mounted) context.go('/dashboard');
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'Apple sign in failed. Please try again.');
+        final msg = e.toString().replaceFirst('Exception: ', '');
+        setState(() => _error = msg);
       }
     } finally {
       if (mounted) setState(() => _appleLoading = false);
@@ -86,7 +62,6 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header row
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 16, 16, 8),
               child: Row(
@@ -100,16 +75,12 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                 ],
               ),
             ),
-
-            // Content
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
-
-                    // Logo
                     Container(
                       width: 72,
                       height: 72,
@@ -127,9 +98,8 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
                     Text(
-                      'Welcome to WealthTrack',
+                      'Welcome Back',
                       style: GoogleFonts.manrope(
                         color: Colors.white,
                         fontSize: 26,
@@ -139,7 +109,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Choose how you want to continue',
+                      'Sign in to your account',
                       style: GoogleFonts.manrope(
                         color: AppColors.greyText,
                         fontSize: 15,
@@ -147,19 +117,19 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                     ),
                     const SizedBox(height: 48),
 
-                    // Sign up with email (primary CTA)
+                    // Sign in with Email
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.email_rounded, size: 20),
-                        label: const Text('Sign up with Email'),
+                        label: const Text('Sign in with Email'),
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(28),
                           ),
                         ),
-                        onPressed: () => context.go('/signup'),
+                        onPressed: () => context.go('/login'),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -189,8 +159,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                           color: AppColors.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color:
-                                  AppColors.danger.withValues(alpha: 0.3)),
+                              color: AppColors.danger.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [
@@ -200,8 +169,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                             Expanded(
                               child: Text(_error!,
                                   style: const TextStyle(
-                                      color: AppColors.danger,
-                                      fontSize: 13)),
+                                      color: AppColors.danger, fontSize: 13)),
                             ),
                           ],
                         ),
@@ -209,29 +177,6 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                     ],
 
                     const Spacer(),
-
-                    // Footer
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Already have an account? ',
-                          style: GoogleFonts.manrope(
-                              color: AppColors.greyText, fontSize: 14),
-                        ),
-                        GestureDetector(
-                          onTap: () => context.go('/login'),
-                          child: Text(
-                            'Log in',
-                            style: GoogleFonts.manrope(
-                              color: AppColors.primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 32),
                   ],
                 ),

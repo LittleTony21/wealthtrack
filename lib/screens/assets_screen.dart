@@ -236,13 +236,6 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                                       color: AppColors.greyText,
                                       fontSize: 14),
                                 ),
-                                const SizedBox(height: 24),
-                                ElevatedButton.icon(
-                                  icon: const Icon(Icons.add_rounded),
-                                  label: const Text('Add Asset'),
-                                  onPressed: () =>
-                                      context.push('/add-asset'),
-                                ),
                               ],
                             ),
                           ),

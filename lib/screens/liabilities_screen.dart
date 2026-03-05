@@ -237,16 +237,6 @@ class _LiabilitiesScreenState extends ConsumerState<LiabilitiesScreen> {
                                       color: AppColors.greyText,
                                       fontSize: 14),
                                 ),
-                                const SizedBox(height: 24),
-                                ElevatedButton.icon(
-                                  icon: const Icon(Icons.add_rounded),
-                                  label: const Text('Add Liability'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.danger,
-                                  ),
-                                  onPressed: () =>
-                                      context.push('/add-liability'),
-                                ),
                               ],
                             ),
                           ),

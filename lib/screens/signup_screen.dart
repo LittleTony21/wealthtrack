@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../config/theme.dart';
-import '../models/user_profile.dart';
 import '../providers/auth_provider.dart';
-import '../providers/profile_provider.dart';
+import '../providers/onboarding_provider.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -47,32 +45,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       _loading = true;
       _error = null;
     });
-    final profileNotifier = ref.read(profileProvider.notifier);
+    final onboarding = ref.read(onboardingProvider);
+    final formName = _nameCtrl.text.trim();
+
     try {
       await ref.read(authProvider.notifier).signUpWithEmail(
             _emailCtrl.text.trim(),
             _passCtrl.text,
+            name: onboarding.name.isNotEmpty ? onboarding.name : formName,
+            avatar: onboarding.avatar,
+            currency: onboarding.currency,
+            theme: onboarding.theme,
+            pinEnabled: onboarding.pinEnabled,
+            pinCode: onboarding.pinCode,
           );
-      final user = FirebaseAuth.instance.currentUser;
-      await user?.updateDisplayName(_nameCtrl.text.trim());
-
-      final prefs = await SharedPreferences.getInstance();
-      final pendingAvatar = prefs.getString('pending_avatar') ?? 'avatar1';
-      final pendingPin = prefs.getString('pending_pin_enabled') ?? 'no';
-      final pendingPinCode = prefs.getString('pending_pin_code') ?? '';
-
-      if (user != null) {
-        await profileNotifier.update(UserProfile(
-          id: user.uid,
-          userName: _nameCtrl.text.trim(),
-          userAvatar: pendingAvatar,
-          pinEnabled: pendingPin == 'yes',
-          pinCode: pendingPinCode,
-        ));
-      }
-      await prefs.remove('pending_avatar');
-      await prefs.remove('pending_pin_enabled');
-      await prefs.remove('pending_pin_code');
 
       if (mounted) context.go('/dashboard');
     } on FirebaseAuthException catch (e) {

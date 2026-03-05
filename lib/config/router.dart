@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/welcome_screen.dart';
 import '../screens/auth_selection_screen.dart';
+import '../screens/signin_selection_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/signup_screen.dart';
 import '../screens/forgot_password_screen.dart';
@@ -69,6 +70,7 @@ GoRouter createRouter() {
     routes: [
       GoRoute(path: '/', builder: (_, __) => const WelcomeScreen()),
       GoRoute(path: '/auth', builder: (_, __) => const AuthSelectionScreen()),
+      GoRoute(path: '/signin', builder: (_, __) => const SignInSelectionScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
       GoRoute(
@@ -83,11 +85,21 @@ GoRouter createRouter() {
       ),
       GoRoute(
           path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
-      GoRoute(path: '/dashboard', builder: (_, __) => const HomeScreen()),
-      GoRoute(path: '/assets', builder: (_, __) => const AssetsScreen()),
       GoRoute(
-          path: '/liabilities',
-          builder: (_, __) => const LiabilitiesScreen()),
+        path: '/dashboard',
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: HomeScreen()),
+      ),
+      GoRoute(
+        path: '/assets',
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: AssetsScreen()),
+      ),
+      GoRoute(
+        path: '/liabilities',
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: LiabilitiesScreen()),
+      ),
       GoRoute(
         path: '/add-asset',
         builder: (context, state) {
@@ -102,7 +114,11 @@ GoRouter createRouter() {
           return AddLiabilityScreen(existingLiability: liability);
         },
       ),
-      GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+      GoRoute(
+        path: '/profile',
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: ProfileScreen()),
+      ),
       GoRoute(
           path: '/profile/personal-info',
           builder: (_, __) => const PersonalInfoScreen()),
