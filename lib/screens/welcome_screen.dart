@@ -110,7 +110,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 GestureDetector(
-                  onTap: () => context.go('/login'),
+                  onTap: () => context.go('/auth'),
                   child: Text(
                     'Already have an account? Sign in',
                     style: GoogleFonts.manrope(

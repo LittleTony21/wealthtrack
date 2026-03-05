@@ -59,14 +59,12 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
 
     String fmt(double amount) {
       final symbols = {
-        'USD': '\$',
-        'EUR': '€',
-        'GBP': '£',
-        'CAD': 'CA\$',
-        'AUD': 'A\$',
-        'JPY': '¥',
+        'USD': '\$', 'EUR': '€', 'GBP': '£', 'CAD': 'CA\$', 'AUD': 'A\$',
+        'JPY': '¥', 'CHF': 'Fr', 'CNY': '¥', 'INR': '₹', 'MXN': 'MX\$',
+        'BRL': 'R\$', 'KRW': '₩', 'SGD': 'S\$', 'NZD': 'NZ\$', 'NOK': 'kr',
+        'SEK': 'kr', 'DKK': 'kr', 'HKD': 'HK\$', 'ZAR': 'R', 'AED': 'د.إ',
       };
-      final sym = symbols[currency] ?? '\$';
+      final sym = symbols[currency] ?? currency;
       return '$sym${NumberFormat('#,##0.00').format(amount)}';
     }
 
@@ -268,10 +266,13 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
         ),
       ),
       // FAB matching design
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/add-asset'),
-        backgroundColor: primary,
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 72),
+        child: FloatingActionButton(
+          onPressed: () => context.push('/add-asset'),
+          backgroundColor: primary,
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+        ),
       ),
     );
   }

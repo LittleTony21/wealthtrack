@@ -36,22 +36,6 @@ class AppThemeScreen extends ConsumerWidget {
         const Color(0xFF100F1A),
         const Color(0xFF00FFB3)
       ),
-      (
-        'custom',
-        'Custom',
-        const Color(0xFF0F1117),
-        const Color(0xFF1E2026),
-        Colors.purple
-      ),
-    ];
-
-    final accentColors = [
-      '#05c293',
-      '#3B82F6',
-      '#8B5CF6',
-      '#F59E0B',
-      '#EF4444',
-      '#EC4899',
     ];
 
     Future<void> applyTheme(String theme) async {
@@ -60,16 +44,6 @@ class AppThemeScreen extends ConsumerWidget {
       if (profile != null) {
         await ref.read(profileProvider.notifier).update(
               profile.copyWith(theme: theme),
-            );
-      }
-    }
-
-    Future<void> applyAccent(String color) async {
-      await ref.read(settingsProvider.notifier).setAccentColor(color);
-      final profile = ref.read(profileProvider).valueOrNull;
-      if (profile != null) {
-        await ref.read(profileProvider.notifier).update(
-              profile.copyWith(accentColor: color),
             );
       }
     }
@@ -178,45 +152,6 @@ class AppThemeScreen extends ConsumerWidget {
                 );
               },
             ),
-
-            if (settings.theme == 'custom') ...[
-              const SizedBox(height: 24),
-              Text(
-                'Accent Color',
-                style: GoogleFonts.manrope(
-                  color: AppColors.greyText,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: accentColors.map((color) {
-                  final hex = color.replaceAll('#', '');
-                  final c = Color(int.parse('FF$hex', radix: 16));
-                  final isSelected = settings.accentColor == color;
-                  return GestureDetector(
-                    onTap: () => applyAccent(color),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: c,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
-                      ),
-                      child: isSelected
-                          ? const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 20)
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
 
             const SizedBox(height: 32),
             SizedBox(

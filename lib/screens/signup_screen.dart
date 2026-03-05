@@ -74,7 +74,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       await prefs.remove('pending_pin_enabled');
       await prefs.remove('pending_pin_code');
 
-      if (mounted) context.go('/onboarding');
+      if (mounted) context.go('/dashboard');
     } on FirebaseAuthException catch (e) {
       if (mounted) setState(() => _error = _authError(e.code));
     } catch (e) {

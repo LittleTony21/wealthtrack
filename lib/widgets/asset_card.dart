@@ -25,14 +25,12 @@ class _AssetCardState extends State<AssetCard> {
 
   String _fmt(double amount) {
     final symbols = {
-      'USD': '\$',
-      'EUR': '€',
-      'GBP': '£',
-      'CAD': 'CA\$',
-      'AUD': 'A\$',
-      'JPY': '¥',
+      'USD': '\$', 'EUR': '€', 'GBP': '£', 'CAD': 'CA\$', 'AUD': 'A\$',
+      'JPY': '¥', 'CHF': 'Fr', 'CNY': '¥', 'INR': '₹', 'MXN': 'MX\$',
+      'BRL': 'R\$', 'KRW': '₩', 'SGD': 'S\$', 'NZD': 'NZ\$', 'NOK': 'kr',
+      'SEK': 'kr', 'DKK': 'kr', 'HKD': 'HK\$', 'ZAR': 'R', 'AED': 'د.إ',
     };
-    final sym = symbols[widget.currency] ?? '\$';
+    final sym = symbols[widget.currency] ?? widget.currency;
     return '$sym${NumberFormat('#,##0.00').format(amount)}';
   }
 

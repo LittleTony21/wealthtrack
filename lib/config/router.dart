@@ -53,7 +53,7 @@ GoRouter createRouter() {
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final path = state.matchedLocation;
 
-      const authOnlyPaths = {'/', '/auth', '/login'};
+      const authOnlyPaths = {'/', '/auth', '/login', '/signup', '/onboarding'};
       final isProtected = path == '/dashboard' ||
           path == '/assets' ||
           path == '/liabilities' ||

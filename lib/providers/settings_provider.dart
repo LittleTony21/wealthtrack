@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'profile_provider.dart';
 
 class AppSettings {
   final String theme;
@@ -63,6 +64,14 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(accentColor: color);
   }
 
+  void syncFromProfile(String currency, String theme, String accentColor) {
+    state = state.copyWith(
+      currency: currency,
+      theme: theme,
+      accentColor: accentColor,
+    );
+  }
+
   Color get accentAsColor {
     final hex = state.accentColor.replaceAll('#', '');
     return Color(int.parse('FF$hex', radix: 16));
@@ -70,6 +79,17 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
 }
 
 final settingsProvider =
-    StateNotifierProvider<SettingsNotifier, AppSettings>(
-  (ref) => SettingsNotifier(),
-);
+    StateNotifierProvider<SettingsNotifier, AppSettings>((ref) {
+  final notifier = SettingsNotifier();
+  ref.listen(profileProvider, (_, next) {
+    final profile = next.valueOrNull;
+    if (profile != null) {
+      notifier.syncFromProfile(
+        profile.currency,
+        profile.theme,
+        profile.accentColor,
+      );
+    }
+  });
+  return notifier;
+});

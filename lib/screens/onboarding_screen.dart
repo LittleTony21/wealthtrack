@@ -682,8 +682,6 @@ class _StepTheme extends StatelessWidget {
           AppColors.primary),
       ('neon', 'Neon', const Color(0xFF08070F), const Color(0xFF100F1A),
           const Color(0xFF00FFB3)),
-      ('custom', 'Custom', const Color(0xFF0F1117), const Color(0xFF1E2026),
-          Colors.purple),
     ];
 
     return _OnboardingStep(
