@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/assets_provider.dart';
 import '../providers/liabilities_provider.dart';
 import '../providers/profile_provider.dart';
@@ -21,6 +22,7 @@ class HomeScreen extends ConsumerWidget {
     final profileAsync = ref.watch(profileProvider);
     final settings = ref.watch(settingsProvider);
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     final currency = settings.currency;
 
@@ -68,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
     final recent = recentItems.take(3).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -76,46 +78,27 @@ class HomeScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.account_balance_wallet_rounded,
-                          color: primary,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'WealthTrack',
-                        style: GoogleFonts.manrope(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: primary,
+                      size: 18,
+                    ),
                   ),
-                  GestureDetector(
-                    onTap: () => context.push('/notifications'),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.surfaceHighlight),
-                      ),
-                      child: const Icon(Icons.notifications_rounded,
-                          color: Colors.white, size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    'WealthTrack',
+                    style: GoogleFonts.manrope(
+                      color: c.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
@@ -132,13 +115,13 @@ class HomeScreen extends ConsumerWidget {
                     Text(
                       'Hello, $profileName 👋',
                       style: GoogleFonts.manrope(
-                          color: AppColors.greyText, fontSize: 14),
+                          color: c.textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Your Net Worth',
                       style: GoogleFonts.manrope(
-                          color: AppColors.greyText,
+                          color: c.textSecondary,
                           fontSize: 13,
                           fontWeight: FontWeight.w500),
                     ),
@@ -218,7 +201,7 @@ class HomeScreen extends ConsumerWidget {
                         Text(
                           'Recent Activity',
                           style: GoogleFonts.manrope(
-                            color: Colors.white,
+                            color: c.textPrimary,
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                           ),
@@ -279,12 +262,14 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: c.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceHighlight),
+        border: Border.all(color: c.border),
+        boxShadow: c.glowShadow(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,8 +290,8 @@ class _SummaryCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             label,
-            style: const TextStyle(
-                color: AppColors.greyText, fontSize: 12),
+            style: TextStyle(
+                color: c.textSecondary, fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
@@ -385,13 +370,14 @@ class _ActivityItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isAsset = type == 'asset';
+    final c = WealthColors.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: c.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.surfaceHighlight),
+        border: Border.all(color: c.border),
       ),
       child: Row(
         children: [
@@ -416,14 +402,14 @@ class _ActivityItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name,
-                    style: const TextStyle(
-                        color: Colors.white,
+                    style: TextStyle(
+                        color: c.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w600)),
                 Text(
                   DateFormat('MMM d, yyyy').format(date),
-                  style: const TextStyle(
-                      color: AppColors.greyText, fontSize: 12),
+                  style: TextStyle(
+                      color: c.textSecondary, fontSize: 12),
                 ),
               ],
             ),
@@ -445,22 +431,23 @@ class _ActivityItem extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: c.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceHighlight),
+        border: Border.all(color: c.border),
       ),
       child: Column(
         children: [
-          const Icon(Icons.inbox_rounded,
-              color: AppColors.greyText, size: 48),
+          Icon(Icons.inbox_rounded,
+              color: c.textSecondary, size: 48),
           const SizedBox(height: 12),
           Text(
             'No activity yet',
             style: GoogleFonts.manrope(
-              color: Colors.white,
+              color: c.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -469,7 +456,7 @@ class _EmptyState extends StatelessWidget {
           Text(
             'Add your first asset or liability to get started.',
             style: GoogleFonts.manrope(
-              color: AppColors.greyText,
+              color: c.textSecondary,
               fontSize: 13,
             ),
             textAlign: TextAlign.center,
@@ -502,13 +489,15 @@ class _MiniChart extends StatelessWidget {
 
     if (points.length < 2) return const SizedBox();
 
+    final c = WealthColors.of(context);
     return Container(
       height: 100,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: c.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceHighlight),
+        border: Border.all(color: c.border),
+        boxShadow: c.glowShadow(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,7 +505,7 @@ class _MiniChart extends StatelessWidget {
           Text(
             'Asset Growth',
             style: GoogleFonts.manrope(
-              color: AppColors.greyText,
+              color: c.textSecondary,
               fontSize: 12,
             ),
           ),

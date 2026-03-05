@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../config/avatars.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../models/user_profile.dart';
 import '../providers/profile_provider.dart';
 
@@ -21,14 +23,6 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   bool _loading = false;
   bool _init = false;
 
-  final _emojiAvatars = [
-    ('avatar1', '😎'),
-    ('avatar2', '🦁'),
-    ('avatar3', '🐬'),
-    ('avatar4', '🦊'),
-    ('avatar5', '🤖'),
-    ('avatar6', '🧑‍💼'),
-  ];
 
   @override
   void initState() {
@@ -74,9 +68,10 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   Widget build(BuildContext context) {
     _initFromProfile();
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: const Text('Personal Info'),
         leading: IconButton(
@@ -92,7 +87,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             Text(
               'Choose Avatar',
               style: GoogleFonts.manrope(
-                color: AppColors.greyText,
+                color: c.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -106,30 +101,62 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                 crossAxisCount: 3,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1,
+                childAspectRatio: 0.85,
               ),
-              itemCount: _emojiAvatars.length,
+              itemCount: kAvatarList.length,
               itemBuilder: (_, i) {
-                final (id, emoji) = _emojiAvatars[i];
-                final isSelected = _selectedAvatar == id;
+                final av = kAvatarList[i];
+                final isSelected = _selectedAvatar == av.id;
                 return GestureDetector(
-                  onTap: () => setState(() => _selectedAvatar = id),
+                  onTap: () => setState(() => _selectedAvatar = av.id),
                   child: Container(
                     decoration: BoxDecoration(
                       color: isSelected
                           ? primary.withValues(alpha: 0.15)
-                          : AppColors.surfaceDark,
+                          : c.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected
-                            ? primary
-                            : AppColors.surfaceHighlight,
+                        color: isSelected ? primary : c.border,
                         width: isSelected ? 2 : 1,
                       ),
                     ),
-                    child: Center(
-                      child: Text(emoji,
-                          style: const TextStyle(fontSize: 36)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(40),
+                          child: Image.asset(
+                            av.path,
+                            width: 56,
+                            height: 56,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: primary.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  av.name[0],
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      color: primary,
+                                      fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          av.name.split(' ').first,
+                          style: const TextStyle(
+                              color: c.textSecondary, fontSize: 10),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -139,7 +166,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             Text(
               'Display Name',
               style: GoogleFonts.manrope(
-                color: AppColors.greyText,
+                color: c.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -147,11 +174,11 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _nameCtrl,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              style: TextStyle(color: c.textPrimary),
+              decoration: InputDecoration(
                 hintText: 'Your display name',
                 prefixIcon: Icon(Icons.person_rounded,
-                    color: AppColors.greyText, size: 20),
+                    color: c.textSecondary, size: 20),
               ),
             ),
             const SizedBox(height: 32),

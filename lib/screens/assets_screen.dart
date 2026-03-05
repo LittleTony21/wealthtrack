@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/assets_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/bottom_nav.dart';
@@ -55,6 +56,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
     final assetsAsync = ref.watch(assetsProvider);
     final settings = ref.watch(settingsProvider);
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
     final currency = settings.currency;
 
     String fmt(double amount) {
@@ -84,7 +86,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
         allAssets.fold(0.0, (sum, a) => sum + a.currentValue);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -101,7 +103,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                       Text(
                         'My Assets',
                         style: GoogleFonts.manrope(
-                          color: Colors.white,
+                          color: c.textPrimary,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                         ),
@@ -113,14 +115,15 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceDark,
+                            color: c.surface,
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: c.border),
                           ),
                           child: Icon(
                             _showSearch
                                 ? Icons.close_rounded
                                 : Icons.search_rounded,
-                            color: Colors.white,
+                            color: c.textPrimary,
                             size: 20,
                           ),
                         ),
@@ -133,7 +136,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                   Text(
                     'Total Assets',
                     style: GoogleFonts.manrope(
-                        color: AppColors.greyText, fontSize: 13),
+                        color: c.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -150,12 +153,12 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                   // Search bar
                   if (_showSearch) ...[
                     TextField(
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: c.textPrimary),
                       onChanged: (v) => setState(() => _query = v),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Search assets...',
                         prefixIcon: Icon(Icons.search_rounded,
-                            color: AppColors.greyText, size: 20),
+                            color: c.textSecondary, size: 20),
                         contentPadding:
                             EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -178,19 +181,18 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? primary
-                                  : AppColors.surfaceDark,
+                                  : c.surface,
                               borderRadius: BorderRadius.circular(20),
                               border: isSelected
                                   ? null
-                                  : Border.all(
-                                      color: AppColors.surfaceHighlight),
+                                  : Border.all(color: c.border),
                             ),
                             child: Text(
                               _label(f),
                               style: TextStyle(
                                 color: isSelected
                                     ? Colors.white
-                                    : AppColors.greyText,
+                                    : c.textSecondary,
                                 fontSize: 13,
                                 fontWeight: isSelected
                                     ? FontWeight.w600
@@ -219,12 +221,12 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.account_balance_wallet_rounded,
-                                    color: AppColors.greyText, size: 56),
+                                    color: c.textSecondary, size: 56),
                                 const SizedBox(height: 16),
                                 Text(
                                   'No assets yet',
                                   style: GoogleFonts.manrope(
-                                    color: Colors.white,
+                                    color: c.textPrimary,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -233,7 +235,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                                 Text(
                                   'Tap + to add your first asset.',
                                   style: GoogleFonts.manrope(
-                                      color: AppColors.greyText,
+                                      color: c.textSecondary,
                                       fontSize: 14),
                                 ),
                               ],

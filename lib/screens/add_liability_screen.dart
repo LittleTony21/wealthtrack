@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../models/liability.dart';
 import '../providers/liabilities_provider.dart';
 import '../providers/settings_provider.dart';
@@ -98,6 +99,7 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    final c = WealthColors.of(context);
     final currency = settings.currency;
 
     String fmt(double v) {
@@ -112,7 +114,7 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: Text(_isEdit ? 'Edit Liability' : 'Add Liability'),
         leading: GestureDetector(
@@ -157,16 +159,16 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                             _nameCtrl.text.isEmpty
                                 ? 'Liability Name'
                                 : _nameCtrl.text,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: c.textPrimary,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
                             'Repaying ${fmt(_dailyPayment)}/day',
-                            style: const TextStyle(
-                                color: AppColors.greyText, fontSize: 12),
+                            style: TextStyle(
+                                color: c.textSecondary, fontSize: 12),
                           ),
                         ],
                       ),
@@ -182,10 +184,10 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const Text(
+                        Text(
                           'balance',
                           style: TextStyle(
-                              color: AppColors.greyText, fontSize: 10),
+                              color: c.textSecondary, fontSize: 10),
                         ),
                       ],
                     ),
@@ -197,12 +199,12 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
 
               TextFormField(
                 controller: _nameCtrl,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: c.textPrimary),
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Name',
                   prefixIcon: Icon(Icons.label_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                 ),
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Enter name' : null,
@@ -212,33 +214,34 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
 
               DropdownButtonFormField<String>(
                 value: _category,
-                dropdownColor: AppColors.surfaceDark,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                dropdownColor: c.surface,
+                style: TextStyle(color: c.textPrimary),
+                decoration: InputDecoration(
                   labelText: 'Category',
                   prefixIcon: Icon(Icons.category_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                 ),
-                items: Liability.categories.map((c) {
+                items: Liability.categories.map((cat) {
                   return DropdownMenuItem(
-                    value: c,
+                    value: cat,
                     child: Text(
                       Liability(
                               id: '',
                               userId: '',
                               name: '',
-                              category: c,
+                              category: cat,
                               balance: 0,
                               monthlyPayment: 0,
                               interestRate: 0,
                               dateAdded: DateTime.now())
                           .categoryLabel,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: WealthColors.of(context).textPrimary),
                     ),
                   );
                 }).toList(),
                 onChanged: (v) => setState(() => _category = v!),
               ),
+
 
               const SizedBox(height: 16),
 
@@ -246,12 +249,12 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                 controller: _balanceCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: c.textPrimary),
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Current Balance',
                   prefixIcon: Icon(Icons.attach_money_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Enter balance';
@@ -266,12 +269,12 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                 controller: _paymentCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: c.textPrimary),
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Monthly Payment',
                   prefixIcon: Icon(Icons.calendar_month_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Enter monthly payment';
@@ -289,7 +292,7 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                     child: Text(
                       'Has interest rate?',
                       style: GoogleFonts.manrope(
-                          color: Colors.white, fontSize: 14),
+                          color: c.textPrimary, fontSize: 14),
                     ),
                   ),
                   Switch(
@@ -306,11 +309,11 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                   controller: _rateCtrl,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: c.textPrimary),
+                  decoration: InputDecoration(
                     labelText: 'Interest Rate (%)',
                     prefixIcon: Icon(Icons.percent_rounded,
-                        color: AppColors.greyText, size: 20),
+                        color: c.textSecondary, size: 20),
                   ),
                 ),
               ],
@@ -327,10 +330,9 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                     lastDate: DateTime.now(),
                     builder: (ctx, child) => Theme(
                       data: Theme.of(ctx).copyWith(
-                        colorScheme: const ColorScheme.dark(
-                          primary: AppColors.danger,
-                          surface: AppColors.cardDark,
-                        ),
+                        colorScheme: c.isLight
+                            ? ColorScheme.light(primary: AppColors.danger, surface: c.card)
+                            : ColorScheme.dark(primary: AppColors.danger, surface: c.card),
                       ),
                       child: child!,
                     ),
@@ -340,22 +342,22 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceDark,
+                    color: c.surface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.surfaceHighlight),
+                    border: Border.all(color: c.border),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded,
-                          color: AppColors.greyText, size: 20),
+                      Icon(Icons.calendar_today_rounded,
+                          color: c.textSecondary, size: 20),
                       const SizedBox(width: 12),
                       Text(
                         DateFormat('MMM d, yyyy').format(_dateAdded),
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: c.textPrimary),
                       ),
                       const Spacer(),
-                      const Icon(Icons.chevron_right_rounded,
-                          color: AppColors.greyText, size: 20),
+                      Icon(Icons.chevron_right_rounded,
+                          color: c.textSecondary, size: 20),
                     ],
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../models/asset.dart';
 import '../providers/assets_provider.dart';
 import '../providers/settings_provider.dart';
@@ -97,6 +98,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
     final currency = settings.currency;
 
     String fmt(double v) {
@@ -111,7 +113,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: Text(_isEdit ? 'Edit Asset' : 'Add Asset'),
         leading: GestureDetector(
@@ -153,16 +155,16 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                         children: [
                           Text(
                             _nameCtrl.text.isEmpty ? 'Asset Name' : _nameCtrl.text,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: c.textPrimary,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
                             'costs ${fmt(_dailyDep)}/day',
-                            style: const TextStyle(
-                                color: AppColors.greyText, fontSize: 12),
+                            style: TextStyle(
+                                color: c.textSecondary, fontSize: 12),
                           ),
                         ],
                       ),
@@ -180,8 +182,8 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                         ),
                         Text(
                           'current value',
-                          style: const TextStyle(
-                              color: AppColors.greyText, fontSize: 10),
+                          style: TextStyle(
+                              color: c.textSecondary, fontSize: 10),
                         ),
                       ],
                     ),
@@ -194,12 +196,12 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
               // Name
               TextFormField(
                 controller: _nameCtrl,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: c.textPrimary),
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Asset Name',
                   prefixIcon: Icon(Icons.label_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                 ),
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Enter asset name' : null,
@@ -210,12 +212,12 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
               // Category
               DropdownButtonFormField<String>(
                 value: _category,
-                dropdownColor: AppColors.surfaceDark,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                dropdownColor: c.surface,
+                style: TextStyle(color: c.textPrimary),
+                decoration: InputDecoration(
                   labelText: 'Category',
                   prefixIcon: Icon(Icons.category_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                 ),
                 items: Asset.categories.map((c) {
                   return DropdownMenuItem(
@@ -230,7 +232,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                               purchaseDate: DateTime.now(),
                               lifespanYears: 1)
                           .categoryLabel,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: WealthColors.of(context).textPrimary),
                     ),
                   );
                 }).toList(),
@@ -244,12 +246,12 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                 controller: _priceCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: c.textPrimary),
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Purchase Price',
                   prefixIcon: Icon(Icons.attach_money_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Enter price';
@@ -270,10 +272,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                     lastDate: DateTime.now(),
                     builder: (ctx, child) => Theme(
                       data: Theme.of(ctx).copyWith(
-                        colorScheme: ColorScheme.dark(
-                          primary: primary,
-                          surface: AppColors.cardDark,
-                        ),
+                        colorScheme: c.isLight
+                            ? ColorScheme.light(primary: primary, surface: c.card)
+                            : ColorScheme.dark(primary: primary, surface: c.card),
                       ),
                       child: child!,
                     ),
@@ -285,22 +286,22 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceDark,
+                    color: c.surface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.surfaceHighlight),
+                    border: Border.all(color: c.border),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded,
-                          color: AppColors.greyText, size: 20),
+                      Icon(Icons.calendar_today_rounded,
+                          color: c.textSecondary, size: 20),
                       const SizedBox(width: 12),
                       Text(
                         DateFormat('MMM d, yyyy').format(_purchaseDate),
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: c.textPrimary),
                       ),
                       const Spacer(),
-                      const Icon(Icons.chevron_right_rounded,
-                          color: AppColors.greyText, size: 20),
+                      Icon(Icons.chevron_right_rounded,
+                          color: c.textSecondary, size: 20),
                     ],
                   ),
                 ),
@@ -312,9 +313,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Lifespan',
+                  Text('Lifespan',
                       style: TextStyle(
-                          color: AppColors.greyText, fontSize: 14)),
+                          color: c.textSecondary, fontSize: 14)),
                   Text(
                     '$_lifespanYears ${_lifespanYears == 1 ? 'year' : 'years'}',
                     style: TextStyle(
@@ -328,7 +329,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: primary,
-                  inactiveTrackColor: AppColors.surfaceHighlight,
+                  inactiveTrackColor: c.border,
                   thumbColor: primary,
                   overlayColor: primary.withValues(alpha: 0.2),
                 ),

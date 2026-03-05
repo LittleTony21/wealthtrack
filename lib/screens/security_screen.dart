@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 
 class SecurityScreen extends StatelessWidget {
   const SecurityScreen({super.key});
@@ -9,9 +10,10 @@ class SecurityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: const Text('Security'),
         leading: IconButton(
@@ -38,7 +40,7 @@ class SecurityScreen extends StatelessWidget {
               Text(
                 'Coming Soon',
                 style: GoogleFonts.manrope(
-                  color: Colors.white,
+                  color: c.textPrimary,
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                 ),
@@ -47,7 +49,7 @@ class SecurityScreen extends StatelessWidget {
               Text(
                 'Advanced security features like biometrics and two-factor authentication are on their way.',
                 style: GoogleFonts.manrope(
-                  color: AppColors.greyText,
+                  color: c.textSecondary,
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,

@@ -18,7 +18,6 @@ import '../screens/profile_screen.dart';
 import '../screens/personal_info_screen.dart';
 import '../screens/currency_screen.dart';
 import '../screens/app_theme_screen.dart';
-import '../screens/notifications_screen.dart';
 import '../screens/data_export_screen.dart';
 import '../screens/security_screen.dart';
 import '../screens/support_screen.dart';
@@ -60,7 +59,6 @@ GoRouter createRouter() {
           path == '/liabilities' ||
           path == '/add-asset' ||
           path == '/add-liability' ||
-          path == '/notifications' ||
           path.startsWith('/profile');
 
       if (!isLoggedIn && isProtected) return '/';
@@ -137,9 +135,6 @@ GoRouter createRouter() {
       GoRoute(
           path: '/profile/support',
           builder: (_, __) => const SupportScreen()),
-      GoRoute(
-          path: '/notifications',
-          builder: (_, __) => const NotificationsScreen()),
       GoRoute(
           path: '/pin-lock', builder: (_, __) => const PinLockScreen()),
     ],

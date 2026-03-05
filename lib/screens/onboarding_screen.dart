@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../config/avatars.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../models/user_profile.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/profile_provider.dart';
@@ -124,15 +126,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Column(
           children: [
             // Top progress bar (thin, at very top like design)
             LinearProgressIndicator(
               value: (_step + 1) / 10,
-              backgroundColor: AppColors.surfaceHighlight,
+              backgroundColor: c.border,
               valueColor:
                   const AlwaysStoppedAnimation<Color>(AppColors.primary),
               minHeight: 4,
@@ -145,7 +148,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   IconButton(
                     icon: Icon(
                       Icons.arrow_back_rounded,
-                      color: _step > 0 ? Colors.white : AppColors.greyText,
+                      color: _step > 0 ? c.textPrimary : c.textSecondary,
                       size: 22,
                     ),
                     onPressed: _step > 0
@@ -157,7 +160,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       'Step ${_step + 1} of 10',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.manrope(
-                        color: AppColors.greyText,
+                        color: c.textSecondary,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -192,8 +195,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _canContinue
                         ? AppColors.primary
-                        : AppColors.surfaceHighlight,
-                    disabledBackgroundColor: AppColors.surfaceHighlight,
+                        : c.border,
+                    disabledBackgroundColor: c.border,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -211,7 +214,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             fontWeight: FontWeight.w600,
                             color: _canContinue
                                 ? Colors.white
-                                : AppColors.greyText,
+                                : c.textSecondary,
                           ),
                         ),
                 ),
@@ -291,13 +294,14 @@ class _OnboardingStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: GoogleFonts.manrope(
-            color: Colors.white,
+            color: c.textPrimary,
             fontSize: 26,
             fontWeight: FontWeight.w800,
             height: 1.2,
@@ -307,7 +311,7 @@ class _OnboardingStep extends StatelessWidget {
         Text(
           subtitle,
           style: GoogleFonts.manrope(
-              color: AppColors.greyText, fontSize: 15),
+              color: c.textSecondary, fontSize: 15),
         ),
         const SizedBox(height: 32),
         child,
@@ -317,9 +321,12 @@ class _OnboardingStep extends StatelessWidget {
 }
 
 Widget _radio(
+    BuildContext context,
     String label, String value, String? selected, ValueChanged<String> onTap,
     {String? emoji}) {
   final isSelected = selected == value;
+  final primary = Theme.of(context).primaryColor;
+  final c = WealthColors.of(context);
   return GestureDetector(
     onTap: () => onTap(value),
     child: Container(
@@ -327,11 +334,11 @@ Widget _radio(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColors.primary.withValues(alpha: 0.08)
-            : AppColors.cardDark,
+            ? primary.withValues(alpha: 0.08)
+            : c.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isSelected ? AppColors.primary : Colors.transparent,
+          color: isSelected ? primary : c.border,
           width: isSelected ? 1.5 : 1,
         ),
       ),
@@ -340,25 +347,24 @@ Widget _radio(
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: c.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           const SizedBox(width: 12),
-          // Radio circle
           Container(
             width: 22,
             height: 22,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.2)
+                  ? primary.withValues(alpha: 0.2)
                   : Colors.transparent,
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.greyText,
+                color: isSelected ? primary : c.textSecondary,
                 width: 2,
               ),
             ),
@@ -367,9 +373,9 @@ Widget _radio(
                     child: Container(
                       width: 10,
                       height: 10,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.primary,
+                        color: primary,
                       ),
                     ),
                   )
@@ -393,12 +399,12 @@ class _StepGoal extends StatelessWidget {
       subtitle: 'This helps us personalize your experience.',
       child: Column(
         children: [
-          _radio('Build long-term wealth', 'wealth', selected, onSelect,
+          _radio(context, 'Build long-term wealth', 'wealth', selected, onSelect,
               emoji: '📈'),
-          _radio('Save for a big purchase', 'save', selected, onSelect,
+          _radio(context, 'Save for a big purchase', 'save', selected, onSelect,
               emoji: '🏠'),
-          _radio('Pay off debt', 'debt', selected, onSelect, emoji: '💳'),
-          _radio('Track my spending', 'track', selected, onSelect,
+          _radio(context, 'Pay off debt', 'debt', selected, onSelect, emoji: '💳'),
+          _radio(context, 'Track my spending', 'track', selected, onSelect,
               emoji: '📊'),
         ],
       ),
@@ -428,6 +434,8 @@ class _StepAssetTypes extends StatelessWidget {
       child: Column(
         children: options.map((o) {
           final isSelected = selected.contains(o.$2);
+          final primary = Theme.of(context).primaryColor;
+          final wc = WealthColors.of(context);
           return GestureDetector(
             onTap: () => onToggle(o.$2),
             child: Container(
@@ -436,13 +444,11 @@ class _StepAssetTypes extends StatelessWidget {
                   horizontal: 20, vertical: 18),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.08)
-                    : AppColors.cardDark,
+                    ? primary.withValues(alpha: 0.08)
+                    : wc.card,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.primary
-                      : Colors.transparent,
+                  color: isSelected ? primary : wc.border,
                   width: isSelected ? 1.5 : 1,
                 ),
               ),
@@ -451,27 +457,22 @@ class _StepAssetTypes extends StatelessWidget {
                   Expanded(
                     child: Text(
                       o.$1,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: wc.textPrimary,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Checkbox square
                   Container(
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.transparent,
+                      color: isSelected ? primary : Colors.transparent,
                       border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.greyText,
+                        color: isSelected ? primary : wc.textSecondary,
                         width: 2,
                       ),
                     ),
@@ -502,11 +503,11 @@ class _StepHasDebt extends StatelessWidget {
       subtitle: 'Loans, credit cards, mortgages, etc.',
       child: Column(
         children: [
-          _radio('Yes, I have loans or debt', 'yes', selected, onSelect,
+          _radio(context, 'Yes, I have loans or debt', 'yes', selected, onSelect,
               emoji: '💰'),
-          _radio('No debts at the moment', 'no', selected, onSelect,
+          _radio(context, 'No debts at the moment', 'no', selected, onSelect,
               emoji: '✅'),
-          _radio("Not sure", 'unsure', selected, onSelect, emoji: '🤔'),
+          _radio(context, "Not sure", 'unsure', selected, onSelect, emoji: '🤔'),
         ],
       ),
     );
@@ -525,11 +526,11 @@ class _StepMostValuable extends StatelessWidget {
       subtitle: 'Pick the one that is worth the most.',
       child: Column(
         children: [
-          _radio('Phone or laptop', 'phone', selected, onSelect, emoji: '📱'),
-          _radio('Car', 'car', selected, onSelect, emoji: '🚗'),
-          _radio('Home', 'home', selected, onSelect, emoji: '🏠'),
-          _radio('Work equipment', 'work', selected, onSelect, emoji: '🔧'),
-          _radio('Not sure', 'unsure', selected, onSelect, emoji: '🤷'),
+          _radio(context, 'Phone or laptop', 'phone', selected, onSelect, emoji: '📱'),
+          _radio(context, 'Car', 'car', selected, onSelect, emoji: '🚗'),
+          _radio(context, 'Home', 'home', selected, onSelect, emoji: '🏠'),
+          _radio(context, 'Work equipment', 'work', selected, onSelect, emoji: '🔧'),
+          _radio(context, 'Not sure', 'unsure', selected, onSelect, emoji: '🤷'),
         ],
       ),
     );
@@ -548,11 +549,11 @@ class _StepKnowsNetWorth extends StatelessWidget {
       subtitle: 'Assets minus liabilities.',
       child: Column(
         children: [
-          _radio('I know exactly', 'exact', selected, onSelect, emoji: '🎯'),
-          _radio('I have a rough idea', 'rough', selected, onSelect,
+          _radio(context, 'I know exactly', 'exact', selected, onSelect, emoji: '🎯'),
+          _radio(context, 'I have a rough idea', 'rough', selected, onSelect,
               emoji: '🧮'),
-          _radio('No clue', 'none', selected, onSelect, emoji: '🙈'),
-          _radio("Scared to find out", 'scared', selected, onSelect,
+          _radio(context, 'No clue', 'none', selected, onSelect, emoji: '🙈'),
+          _radio(context, "Scared to find out", 'scared', selected, onSelect,
               emoji: '😬'),
         ],
       ),
@@ -581,9 +582,9 @@ class _StepCurrency extends StatelessWidget {
       subtitle: 'All values will be shown in this currency.',
       child: Column(
         children: currencies
-            .map((c) => _radio(
-                '${c.$1} — ${c.$2}', c.$1, selected, onSelect,
-                emoji: c.$3))
+            .map((cur) => _radio(
+                context, '${cur.$1} — ${cur.$2}', cur.$1, selected, onSelect,
+                emoji: cur.$3))
             .toList(),
       ),
     );
@@ -601,11 +602,11 @@ class _StepName extends StatelessWidget {
       subtitle: 'We\'ll use this to personalize your dashboard.',
       child: TextFormField(
         controller: controller,
-        style: const TextStyle(color: Colors.white),
-        decoration: const InputDecoration(
+        style: TextStyle(color: WealthColors.of(context).textPrimary),
+        decoration: InputDecoration(
           hintText: 'Your display name (optional)',
           prefixIcon: Icon(Icons.person_rounded,
-              color: AppColors.greyText, size: 20),
+              color: WealthColors.of(context).textSecondary, size: 20),
         ),
       ),
     );
@@ -619,15 +620,8 @@ class _StepAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatars = [
-      'avatar1',
-      'avatar2',
-      'avatar3',
-      'avatar4',
-      'avatar5',
-      'avatar6',
-    ];
-    final emojiAvatars = ['😎', '🦁', '🐬', '🦊', '🤖', '🧑‍💼'];
+    final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     return _OnboardingStep(
       title: 'Pick your avatar',
@@ -639,28 +633,62 @@ class _StepAvatar extends StatelessWidget {
           crossAxisCount: 3,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
+          childAspectRatio: 0.85,
         ),
-        itemCount: avatars.length,
+        itemCount: kAvatarList.length,
         itemBuilder: (_, i) {
-          final isSelected = selected == avatars[i];
+          final av = kAvatarList[i];
+          final isSelected = selected == av.id;
           return GestureDetector(
-            onTap: () => onSelect(avatars[i]),
+            onTap: () => onSelect(av.id),
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.15)
-                    : AppColors.surfaceDark,
+                    ? primary.withValues(alpha: 0.15)
+                    : c.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.surfaceHighlight,
+                  color: isSelected ? primary : c.border,
                   width: isSelected ? 2 : 1,
                 ),
               ),
-              child: Center(
-                child: Text(emojiAvatars[i],
-                    style: const TextStyle(fontSize: 40)),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(40),
+                    child: Image.asset(
+                      av.path,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: primary.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            av.name[0],
+                            style: TextStyle(
+                                fontSize: 24,
+                                color: primary,
+                                fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    av.name.split(' ').first,
+                    style: TextStyle(
+                        color: c.textSecondary, fontSize: 10),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           );
@@ -792,16 +820,16 @@ class _StepPinState extends State<_StepPin> {
       subtitle: 'Add an extra layer of security.',
       child: Column(
         children: [
-          _radio('Yes, use PIN lock', 'yes', widget.selected, widget.onSelect,
+          _radio(context, 'Yes, use PIN lock', 'yes', widget.selected, widget.onSelect,
               emoji: '🔒'),
-          _radio('No thanks', 'no', widget.selected, widget.onSelect,
+          _radio(context, 'No thanks', 'no', widget.selected, widget.onSelect,
               emoji: '🚫'),
           if (widget.selected == 'yes') ...[
             const SizedBox(height: 24),
             Text(
               'Enter your 4-digit PIN',
               style: GoogleFonts.manrope(
-                  color: AppColors.greyText, fontSize: 14),
+                  color: WealthColors.of(context).textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 16),
             Row(
@@ -826,16 +854,16 @@ class _StepPinState extends State<_StepPin> {
                       counterText: '',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                            color: AppColors.surfaceHighlight),
+                        borderSide: BorderSide(
+                            color: WealthColors.of(context).border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                            color: AppColors.primary, width: 2),
+                        borderSide: BorderSide(
+                            color: Theme.of(context).primaryColor, width: 2),
                       ),
                       filled: true,
-                      fillColor: AppColors.surfaceDark,
+                      fillColor: WealthColors.of(context).surface,
                     ),
                     onChanged: (v) {
                       if (v.isNotEmpty && i < 3) {

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../config/avatars.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
@@ -17,19 +19,14 @@ class ProfileScreen extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final primary = Theme.of(context).primaryColor;
 
+    final c = WealthColors.of(context);
     final profile = profileAsync.valueOrNull;
-    final emojiAvatars = {
-      'avatar1': '😎',
-      'avatar2': '🦁',
-      'avatar3': '🐬',
-      'avatar4': '🦊',
-      'avatar5': '🤖',
-      'avatar6': '🧑‍💼',
-    };
-    final avatarEmoji = emojiAvatars[profile?.userAvatar] ?? '😎';
+    final currentAvatarId = profile?.userAvatar ?? 'avatar1';
+    final currentAvatarPath = avatarPath(currentAvatarId);
+    final currentAvatarInitial = avatarName(currentAvatarId)[0];
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -41,10 +38,9 @@ class ProfileScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
                       decoration: BoxDecoration(
-                        color: AppColors.cardDark,
-                        border: const Border(
-                          bottom: BorderSide(
-                              color: AppColors.surfaceHighlight),
+                        color: c.card,
+                        border: Border(
+                          bottom: BorderSide(color: c.border),
                         ),
                       ),
                       child: Column(
@@ -55,15 +51,29 @@ class ProfileScreen extends ConsumerWidget {
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color: primary.withValues(alpha: 0.15),
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       color: primary, width: 2),
                                 ),
-                                child: Center(
-                                  child: Text(avatarEmoji,
-                                      style:
-                                          const TextStyle(fontSize: 36)),
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    currentAvatarPath,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: primary.withValues(alpha: 0.15),
+                                      child: Center(
+                                        child: Text(
+                                          currentAvatarInitial,
+                                          style: TextStyle(
+                                              fontSize: 32,
+                                              color: primary,
+                                              fontWeight: FontWeight.w700),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                               Positioned(
@@ -90,7 +100,7 @@ class ProfileScreen extends ConsumerWidget {
                           Text(
                             profile?.userName ?? 'User',
                             style: GoogleFonts.manrope(
-                              color: Colors.white,
+                              color: c.textPrimary,
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                             ),
@@ -99,7 +109,7 @@ class ProfileScreen extends ConsumerWidget {
                           Text(
                             'Member',
                             style: GoogleFonts.manrope(
-                                color: AppColors.greyText, fontSize: 13),
+                                color: c.textSecondary, fontSize: 13),
                           ),
                         ],
                       ),
@@ -174,12 +184,12 @@ class ProfileScreen extends ConsumerWidget {
                                 final ok = await showDialog<bool>(
                                   context: context,
                                   builder: (_) => AlertDialog(
-                                    backgroundColor: AppColors.cardDark,
-                                    title: const Text('Delete Account',
-                                        style: TextStyle(color: Colors.white)),
-                                    content: const Text(
+                                    backgroundColor: WealthColors.of(context).card,
+                                    title: Text('Delete Account',
+                                        style: TextStyle(color: WealthColors.of(context).textPrimary)),
+                                    content: Text(
                                       'This will permanently delete your account and all your data (assets, liabilities, profile). This cannot be undone.',
-                                      style: TextStyle(color: AppColors.greyText),
+                                      style: TextStyle(color: WealthColors.of(context).textSecondary),
                                     ),
                                     actions: [
                                       TextButton(
@@ -208,19 +218,22 @@ class ProfileScreen extends ConsumerWidget {
                                           : 'Failed to delete account. Please try again.';
                                       showDialog(
                                         context: context,
-                                        builder: (_) => AlertDialog(
-                                          backgroundColor: AppColors.cardDark,
-                                          title: const Text('Error',
-                                              style: TextStyle(color: Colors.white)),
+                                        builder: (ctx) {
+                                          final dc = WealthColors.of(ctx);
+                                          return AlertDialog(
+                                          backgroundColor: dc.card,
+                                          title: Text('Error',
+                                              style: TextStyle(color: dc.textPrimary)),
                                           content: Text(msg,
-                                              style: const TextStyle(color: AppColors.greyText)),
+                                              style: TextStyle(color: dc.textSecondary)),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context),
+                                              onPressed: () => Navigator.pop(ctx),
                                               child: const Text('OK'),
                                             ),
                                           ],
-                                        ),
+                                        );
+                                        },
                                       );
                                     }
                                   }
@@ -249,31 +262,32 @@ class ProfileScreen extends ConsumerWidget {
                               onPressed: () async {
                                 final ok = await showDialog<bool>(
                                   context: context,
-                                  builder: (_) => AlertDialog(
-                                    backgroundColor: AppColors.cardDark,
-                                    title: const Text('Sign Out',
-                                        style:
-                                            TextStyle(color: Colors.white)),
-                                    content: const Text(
+                                  builder: (ctx) {
+                                    final dc = WealthColors.of(ctx);
+                                    return AlertDialog(
+                                    backgroundColor: dc.card,
+                                    title: Text('Sign Out',
+                                        style: TextStyle(color: dc.textPrimary)),
+                                    content: Text(
                                       'Are you sure you want to sign out?',
-                                      style: TextStyle(
-                                          color: AppColors.greyText),
+                                      style: TextStyle(color: dc.textSecondary),
                                     ),
                                     actions: [
                                       TextButton(
                                         onPressed: () =>
-                                            Navigator.pop(context, false),
+                                            Navigator.pop(ctx, false),
                                         child: const Text('Cancel'),
                                       ),
                                       TextButton(
                                         onPressed: () =>
-                                            Navigator.pop(context, true),
+                                            Navigator.pop(ctx, true),
                                         child: const Text('Sign Out',
                                             style: TextStyle(
                                                 color: AppColors.danger)),
                                       ),
                                     ],
-                                  ),
+                                  );
+                                  },
                                 );
                                 if (ok == true && context.mounted) {
                                   await ref.read(authProvider.notifier).signOut();
@@ -308,40 +322,49 @@ class _Section extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Text(
-            title,
-            style: GoogleFonts.manrope(
-              color: AppColors.greyText,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.cardDark,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.surfaceHighlight),
-          ),
-          child: Column(
-            children: items
-                .asMap()
-                .entries
-                .map((e) => Column(children: [
-                      e.value,
-                      if (e.key < items.length - 1)
-                        const Divider(
-                          height: 1,
-                          color: AppColors.surfaceHighlight,
-                          indent: 52,
-                        ),
-                    ]))
-                .toList(),
-          ),
-        ),
+        Builder(builder: (context) {
+          final c = WealthColors.of(context);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  title,
+                  style: GoogleFonts.manrope(
+                    color: c.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: c.card,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: c.border),
+                  boxShadow: c.glowShadow(),
+                ),
+                child: Column(
+                  children: items
+                      .asMap()
+                      .entries
+                      .map((e) => Column(children: [
+                            e.value,
+                            if (e.key < items.length - 1)
+                              Divider(
+                                height: 1,
+                                color: c.border,
+                                indent: 52,
+                              ),
+                          ]))
+                      .toList(),
+                ),
+              ),
+            ],
+          );
+        }),
       ],
     );
   }
@@ -383,20 +406,20 @@ class _MenuItem extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: WealthColors.of(context).textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w500),
               ),
             ),
             if (trailing != null) ...[
               Text(trailing!,
-                  style: const TextStyle(
-                      color: AppColors.greyText, fontSize: 13)),
+                  style: TextStyle(
+                      color: WealthColors.of(context).textSecondary, fontSize: 13)),
               const SizedBox(width: 4),
             ],
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.greyText, size: 20),
+            Icon(Icons.chevron_right_rounded,
+                color: WealthColors.of(context).textSecondary, size: 20),
           ],
         ),
       ),

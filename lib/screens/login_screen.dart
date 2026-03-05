@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -66,8 +67,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -79,8 +81,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded,
-                          color: Colors.white),
+                      icon: Icon(Icons.arrow_back_rounded,
+                          color: c.textPrimary),
                       onPressed: () => context.go('/signin'),
                     ),
                     Expanded(
@@ -88,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         'Log In',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
-                          color: Colors.white,
+                          color: c.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -130,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Text(
                           'Welcome Back',
                           style: GoogleFonts.manrope(
-                            color: Colors.white,
+                            color: c.textPrimary,
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
                           ),
@@ -141,7 +143,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Text(
                           'Please enter your details to sign in.',
                           style: GoogleFonts.manrope(
-                            color: AppColors.greyText,
+                            color: c.textSecondary,
                             fontSize: 14,
                           ),
                           textAlign: TextAlign.center,
@@ -155,11 +157,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       TextFormField(
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
+                        style: TextStyle(color: c.textPrimary),
+                        decoration: InputDecoration(
                           hintText: 'Enter your email',
                           prefixIcon: Icon(Icons.mail_rounded,
-                              color: AppColors.greyText, size: 20),
+                              color: c.textSecondary, size: 20),
                         ),
                         validator: (v) => v == null || !v.contains('@')
                             ? 'Enter a valid email'
@@ -173,11 +175,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       TextFormField(
                         controller: _passCtrl,
                         obscureText: _obscure,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: c.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
-                          prefixIcon: const Icon(Icons.lock_rounded,
-                              color: AppColors.greyText, size: 20),
+                          prefixIcon: Icon(Icons.lock_rounded,
+                              color: c.textSecondary, size: 20),
                           suffixIcon: GestureDetector(
                             onTap: () =>
                                 setState(() => _obscure = !_obscure),
@@ -185,7 +187,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               _obscure
                                   ? Icons.visibility_rounded
                                   : Icons.visibility_off_rounded,
-                              color: AppColors.greyText,
+                              color: c.textSecondary,
                               size: 20,
                             ),
                           ),
@@ -275,7 +277,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             Text(
                               "Don't have an account? ",
                               style: GoogleFonts.manrope(
-                                  color: AppColors.greyText, fontSize: 14),
+                                  color: c.textSecondary, fontSize: 14),
                             ),
                             GestureDetector(
                               onTap: () => context.go('/signup'),
@@ -313,7 +315,7 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: GoogleFonts.manrope(
-        color: Colors.white,
+        color: WealthColors.of(context).textPrimary,
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),

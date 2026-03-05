@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 
@@ -73,9 +74,10 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -95,7 +97,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
               Text(
                 'Enter your PIN',
                 style: GoogleFonts.manrope(
-                  color: Colors.white,
+                  color: c.textPrimary,
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                 ),
@@ -104,7 +106,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
               Text(
                 'Enter your 4-digit PIN to continue',
                 style: GoogleFonts.manrope(
-                    color: AppColors.greyText, fontSize: 14),
+                    color: c.textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 48),
               AnimatedBuilder(
@@ -127,8 +129,8 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
                         maxLength: 1,
                         obscureText: true,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: c.textPrimary,
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
                         ),
@@ -137,9 +139,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide(
-                              color: _error
-                                  ? AppColors.danger
-                                  : AppColors.surfaceHighlight,
+                              color: _error ? AppColors.danger : c.border,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -152,13 +152,11 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide(
-                              color: _error
-                                  ? AppColors.danger
-                                  : AppColors.surfaceHighlight,
+                              color: _error ? AppColors.danger : c.border,
                             ),
                           ),
                           filled: true,
-                          fillColor: AppColors.surfaceDark,
+                          fillColor: c.surface,
                         ),
                         onChanged: (v) {
                           if (v.isNotEmpty) {
@@ -192,7 +190,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
                 child: Text(
                   'Sign out instead',
                   style: GoogleFonts.manrope(
-                    color: AppColors.greyText,
+                    color: c.textSecondary,
                     fontSize: 14,
                     decoration: TextDecoration.underline,
                   ),

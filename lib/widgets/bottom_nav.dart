@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -10,13 +11,15 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
+        color: c.card,
         border: Border(
-          top: BorderSide(color: AppColors.surfaceHighlight, width: 1),
+          top: BorderSide(color: c.border, width: 1),
         ),
+        boxShadow: c.glowShadow(),
       ),
       child: SafeArea(
         top: false,
@@ -86,7 +89,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? selectedColor : AppColors.greyText;
+    final c = WealthColors.of(context);
+    final color = isSelected ? selectedColor : c.textSecondary;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,

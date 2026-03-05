@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -13,6 +14,7 @@ class AppThemeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     final themes = [
       (
@@ -49,7 +51,7 @@ class AppThemeScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: const Text('App Theme'),
         leading: IconButton(
@@ -65,7 +67,7 @@ class AppThemeScreen extends ConsumerWidget {
             Text(
               'Choose Theme',
               style: GoogleFonts.manrope(
-                color: AppColors.greyText,
+                color: c.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),

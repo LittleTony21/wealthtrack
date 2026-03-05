@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
 
@@ -85,8 +86,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -98,8 +100,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded,
-                          color: Colors.white),
+                      icon: Icon(Icons.arrow_back_rounded,
+                          color: c.textPrimary),
                       onPressed: () => context.go('/auth'),
                     ),
                     Expanded(
@@ -107,7 +109,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         'Create Account',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
-                          color: Colors.white,
+                          color: c.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -132,7 +134,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _nameCtrl,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: c.textPrimary),
                         decoration: const InputDecoration(
                           hintText: 'John Doe',
                         ),
@@ -148,7 +150,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       TextFormField(
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: c.textPrimary),
                         decoration: const InputDecoration(
                           hintText: 'john.doe@example.com',
                         ),
@@ -164,7 +166,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       TextFormField(
                         controller: _passCtrl,
                         obscureText: _obscurePass,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: c.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Enter password',
                           suffixIcon: GestureDetector(
@@ -174,7 +176,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               _obscurePass
                                   ? Icons.visibility_rounded
                                   : Icons.visibility_off_rounded,
-                              color: AppColors.greyText,
+                              color: c.textSecondary,
                               size: 20,
                             ),
                           ),
@@ -191,7 +193,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       TextFormField(
                         controller: _confirmCtrl,
                         obscureText: _obscureConfirm,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: c.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Re-enter password',
                           suffixIcon: GestureDetector(
@@ -201,7 +203,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               _obscureConfirm
                                   ? Icons.visibility_rounded
                                   : Icons.visibility_off_rounded,
-                              color: AppColors.greyText,
+                              color: c.textSecondary,
                               size: 20,
                             ),
                           ),
@@ -225,7 +227,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                   setState(() => _termsAccepted = v ?? false),
                               activeColor: AppColors.primary,
                               side: const BorderSide(
-                                  color: AppColors.greyText),
+                                  color: c.textSecondary),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4)),
                             ),
@@ -235,7 +237,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             child: Text(
                               'I agree to the Terms of Service and Privacy Policy',
                               style: GoogleFonts.manrope(
-                                  color: AppColors.greyText, fontSize: 13),
+                                  color: c.textSecondary, fontSize: 13),
                             ),
                           ),
                         ],
@@ -304,7 +306,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             Text(
                               'Already have an account? ',
                               style: GoogleFonts.manrope(
-                                  color: AppColors.greyText, fontSize: 14),
+                                  color: c.textSecondary, fontSize: 14),
                             ),
                             GestureDetector(
                               onTap: () => context.go('/login'),
@@ -342,7 +344,7 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: GoogleFonts.manrope(
-        color: Colors.white,
+        color: WealthColors.of(context).textPrimary,
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 
 class HealthBar extends StatelessWidget {
   final double percent;
@@ -22,7 +23,7 @@ class HealthBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(height / 2),
           child: LinearProgressIndicator(
             value: percent / 100,
-            backgroundColor: AppColors.surfaceHighlight,
+            backgroundColor: WealthColors.of(context).border,
             valueColor: AlwaysStoppedAnimation<Color>(_color),
             minHeight: height,
           ),

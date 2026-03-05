@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/auth_provider.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -48,8 +49,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -59,8 +61,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () => context.go('/login'),
-                child: const Icon(Icons.arrow_back_rounded,
-                    color: Colors.white),
+                child: Icon(Icons.arrow_back_rounded,
+                    color: c.textPrimary),
               ),
               const SizedBox(height: 40),
               if (!_sent) ...[
@@ -78,7 +80,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 Text(
                   'Reset Password',
                   style: GoogleFonts.manrope(
-                    color: Colors.white,
+                    color: c.textPrimary,
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
                   ),
@@ -87,17 +89,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 Text(
                   "Enter your email and we'll send you a reset link.",
                   style: GoogleFonts.manrope(
-                      color: AppColors.greyText, fontSize: 15),
+                      color: c.textSecondary, fontSize: 15),
                 ),
                 const SizedBox(height: 36),
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: c.textPrimary),
+                  decoration: InputDecoration(
                     hintText: 'Email address',
                     prefixIcon: Icon(Icons.email_rounded,
-                        color: AppColors.greyText, size: 20),
+                        color: c.textSecondary, size: 20),
                   ),
                 ),
                 if (_error != null) ...[
@@ -136,7 +138,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 Text(
                   'Check your email',
                   style: GoogleFonts.manrope(
-                    color: Colors.white,
+                    color: c.textPrimary,
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
                   ),
@@ -145,7 +147,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 Text(
                   "We've sent a password reset link to ${_emailCtrl.text.trim()}.",
                   style: GoogleFonts.manrope(
-                      color: AppColors.greyText, fontSize: 15),
+                      color: c.textSecondary, fontSize: 15),
                 ),
                 const SizedBox(height: 36),
                 SizedBox(

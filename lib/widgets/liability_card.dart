@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/liability.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 
 class LiabilityCard extends StatefulWidget {
   final Liability liability;
@@ -55,6 +56,7 @@ class _LiabilityCardState extends State<LiabilityCard> {
   Widget build(BuildContext context) {
     final liability = widget.liability;
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     // Display progress as how manageable the interest rate is (lower is better)
     final paidRatio = (1.0 - (liability.interestRate / 30.0).clamp(0.0, 1.0));
@@ -65,9 +67,10 @@ class _LiabilityCardState extends State<LiabilityCard> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: c.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.surfaceHighlight),
+          border: Border.all(color: c.border),
+          boxShadow: c.glowShadow(),
         ),
         child: Column(
           children: [
@@ -81,7 +84,7 @@ class _LiabilityCardState extends State<LiabilityCard> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceHighlight,
+                      color: c.border,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(_icon, color: AppColors.danger, size: 24),
@@ -100,8 +103,8 @@ class _LiabilityCardState extends State<LiabilityCard> {
                             Expanded(
                               child: Text(
                                 liability.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: c.textPrimary,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -111,8 +114,8 @@ class _LiabilityCardState extends State<LiabilityCard> {
                             const SizedBox(width: 8),
                             Text(
                               _fmt(liability.balance),
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: c.textPrimary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -126,8 +129,8 @@ class _LiabilityCardState extends State<LiabilityCard> {
                           children: [
                             Text(
                               'Repaying ${_fmt(liability.dailyPayment)}/day',
-                              style: const TextStyle(
-                                color: AppColors.greyText,
+                              style: TextStyle(
+                                color: c.textSecondary,
                                 fontSize: 12,
                               ),
                             ),
@@ -140,8 +143,7 @@ class _LiabilityCardState extends State<LiabilityCard> {
                                     borderRadius: BorderRadius.circular(3),
                                     child: LinearProgressIndicator(
                                       value: paidRatio.clamp(0.0, 1.0),
-                                      backgroundColor:
-                                          AppColors.surfaceHighlight,
+                                      backgroundColor: c.border,
                                       valueColor:
                                           const AlwaysStoppedAnimation<Color>(
                                               AppColors.danger),
@@ -153,8 +155,8 @@ class _LiabilityCardState extends State<LiabilityCard> {
                                   width: 26,
                                   child: Text(
                                     '$displayPct',
-                                    style: const TextStyle(
-                                      color: AppColors.greyText,
+                                    style: TextStyle(
+                                      color: c.textSecondary,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -176,7 +178,7 @@ class _LiabilityCardState extends State<LiabilityCard> {
             if (_expanded)
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
+                  color: c.surface,
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(16),
                     bottomRight: Radius.circular(16),
@@ -230,31 +232,34 @@ class _LiabilityCardState extends State<LiabilityCard> {
                             onPressed: () async {
                               final ok = await showDialog<bool>(
                                 context: context,
-                                builder: (_) => AlertDialog(
-                                  backgroundColor: AppColors.cardDark,
-                                  title: const Text('Delete Liability',
+                                builder: (ctx) {
+                                final dc = WealthColors.of(ctx);
+                                return AlertDialog(
+                                  backgroundColor: dc.card,
+                                  title: Text('Delete Liability',
                                       style:
-                                          TextStyle(color: Colors.white)),
+                                          TextStyle(color: dc.textPrimary)),
                                   content: Text(
                                     'Delete "${liability.name}"? This cannot be undone.',
-                                    style: const TextStyle(
-                                        color: AppColors.greyText),
+                                    style: TextStyle(
+                                        color: dc.textSecondary),
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () =>
-                                          Navigator.pop(context, false),
+                                          Navigator.pop(ctx, false),
                                       child: const Text('Cancel'),
                                     ),
                                     TextButton(
                                       onPressed: () =>
-                                          Navigator.pop(context, true),
+                                          Navigator.pop(ctx, true),
                                       child: const Text('Delete',
                                           style: TextStyle(
                                               color: AppColors.danger)),
                                     ),
                                   ],
-                                ),
+                                );
+                              },
                               );
                               if (ok == true) widget.onDelete();
                             },
@@ -281,17 +286,18 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  color: AppColors.greyText, fontSize: 13)),
+              style: TextStyle(
+                  color: c.textSecondary, fontSize: 13)),
           Text(value,
               style: TextStyle(
-                color: valueColor ?? Colors.white,
+                color: valueColor ?? c.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               )),

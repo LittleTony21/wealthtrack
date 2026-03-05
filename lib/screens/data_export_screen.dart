@@ -1,8 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/assets_provider.dart';
 import '../providers/liabilities_provider.dart';
 
@@ -30,33 +34,14 @@ class DataExportScreen extends ConsumerWidget {
     return sb.toString();
   }
 
-  void _showCopied(BuildContext context, String data) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text('Export Data',
-            style: TextStyle(color: Colors.white)),
-        content: Container(
-          constraints: const BoxConstraints(maxHeight: 200),
-          child: SingleChildScrollView(
-            child: Text(
-              data,
-              style: const TextStyle(
-                  color: AppColors.greyText,
-                  fontSize: 11,
-                  fontFamily: 'monospace'),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close',
-                style: TextStyle(color: AppColors.primary)),
-          ),
-        ],
-      ),
+  Future<void> _exportFile(
+      BuildContext context, String csv, String filename) async {
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$filename.csv');
+    await file.writeAsString(csv);
+    await Share.shareXFiles(
+      [XFile(file.path, mimeType: 'text/csv')],
+      subject: filename,
     );
   }
 
@@ -65,12 +50,13 @@ class DataExportScreen extends ConsumerWidget {
     final assetsAsync = ref.watch(assetsProvider);
     final liabsAsync = ref.watch(liabilitiesProvider);
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     final assets = assetsAsync.valueOrNull ?? [];
     final liabilities = liabsAsync.valueOrNull ?? [];
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: const Text('Data Export'),
         leading: IconButton(
@@ -86,7 +72,7 @@ class DataExportScreen extends ConsumerWidget {
             Text(
               'Export your data as CSV',
               style: GoogleFonts.manrope(
-                  color: AppColors.greyText, fontSize: 14),
+                  color: c.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 24),
             _ExportCard(
@@ -95,7 +81,8 @@ class DataExportScreen extends ConsumerWidget {
               subtitle: '${assets.length} asset${assets.length == 1 ? '' : 's'} tracked',
               color: primary,
               enabled: assets.isNotEmpty,
-              onTap: () => _showCopied(context, _assetsCSV(assets)),
+              onTap: () async =>
+                  _exportFile(context, _assetsCSV(assets), 'assets_export'),
             ),
             const SizedBox(height: 12),
             _ExportCard(
@@ -105,7 +92,8 @@ class DataExportScreen extends ConsumerWidget {
                   '${liabilities.length} liabilit${liabilities.length == 1 ? 'y' : 'ies'} tracked',
               color: AppColors.danger,
               enabled: liabilities.isNotEmpty,
-              onTap: () => _showCopied(context, _liabilitiesCSV(liabilities)),
+              onTap: () async => _exportFile(
+                  context, _liabilitiesCSV(liabilities), 'liabilities_export'),
             ),
             const SizedBox(height: 12),
             _ExportCard(
@@ -114,31 +102,10 @@ class DataExportScreen extends ConsumerWidget {
               subtitle: 'Assets + Liabilities combined',
               color: const Color(0xFFFFB340),
               enabled: assets.isNotEmpty || liabilities.isNotEmpty,
-              onTap: () => _showCopied(
+              onTap: () async => _exportFile(
                 context,
-                'ASSETS\n${_assetsCSV(assets)}\n\nLIABILITIES\n${_liabilitiesCSV(liabilities)}',
-              ),
-            ),
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: primary.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_rounded, color: primary, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Data will be shown as CSV text. Copy and paste into a spreadsheet.',
-                      style: GoogleFonts.manrope(
-                          color: AppColors.greyText, fontSize: 12),
-                    ),
-                  ),
-                ],
+                'ASSETS\n${_assetsCSV(assets)}\nLIABILITIES\n${_liabilitiesCSV(liabilities)}',
+                'wealthtrack_export',
               ),
             ),
           ],
@@ -167,6 +134,7 @@ class _ExportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Opacity(
@@ -174,9 +142,10 @@ class _ExportCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: c.card,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.surfaceHighlight),
+            border: Border.all(color: c.border),
+            boxShadow: c.glowShadow(),
           ),
           child: Row(
             children: [
@@ -195,18 +164,18 @@ class _ExportCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
-                        style: const TextStyle(
-                            color: Colors.white,
+                        style: TextStyle(
+                            color: c.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w600)),
                     Text(subtitle,
-                        style: const TextStyle(
-                            color: AppColors.greyText, fontSize: 12)),
+                        style: TextStyle(
+                            color: c.textSecondary, fontSize: 12)),
                   ],
                 ),
               ),
               Icon(Icons.chevron_right_rounded,
-                  color: enabled ? Colors.white : AppColors.greyText,
+                  color: enabled ? c.textPrimary : c.textSecondary,
                   size: 20),
             ],
           ),

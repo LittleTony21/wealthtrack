@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import 'package:go_router/go_router.dart';
 
 class _FAQ {
@@ -70,6 +71,7 @@ class _SupportScreenState extends State<SupportScreen> {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
 
     final filtered = _query.isEmpty
         ? _faqs
@@ -80,7 +82,7 @@ class _SupportScreenState extends State<SupportScreen> {
             .toList();
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -90,8 +92,8 @@ class _SupportScreenState extends State<SupportScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded,
-                        color: Colors.white),
+                    icon: Icon(Icons.arrow_back_rounded,
+                        color: c.textPrimary),
                     onPressed: () => context.pop(),
                   ),
                   Expanded(
@@ -99,7 +101,7 @@ class _SupportScreenState extends State<SupportScreen> {
                       'Help & Support',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.manrope(
-                        color: Colors.white,
+                        color: c.textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -115,12 +117,12 @@ class _SupportScreenState extends State<SupportScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: TextField(
                 controller: _searchCtrl,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: c.textPrimary),
                 onChanged: (v) => setState(() => _query = v),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Search FAQs...',
                   prefixIcon: Icon(Icons.search_rounded,
-                      color: AppColors.greyText, size: 20),
+                      color: c.textSecondary, size: 20),
                   contentPadding: EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
@@ -133,7 +135,7 @@ class _SupportScreenState extends State<SupportScreen> {
                   Text(
                     'Frequently Asked Questions',
                     style: GoogleFonts.manrope(
-                      color: AppColors.greyText,
+                      color: c.textSecondary,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -143,12 +145,13 @@ class _SupportScreenState extends State<SupportScreen> {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.cardDark,
+                        color: c.card,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                             color: faq.expanded
                                 ? primary.withValues(alpha: 0.4)
-                                : AppColors.surfaceHighlight),
+                                : c.border),
+                        boxShadow: c.glowShadow(),
                       ),
                       child: GestureDetector(
                         onTap: () {
@@ -172,7 +175,7 @@ class _SupportScreenState extends State<SupportScreen> {
                                     child: Text(
                                       faq.question,
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: c.textPrimary,
                                         fontSize: 14,
                                         fontWeight: faq.expanded
                                             ? FontWeight.w700
@@ -186,7 +189,7 @@ class _SupportScreenState extends State<SupportScreen> {
                                     decoration: BoxDecoration(
                                       color: faq.expanded
                                           ? primary.withValues(alpha: 0.15)
-                                          : AppColors.surfaceHighlight,
+                                          : c.border,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
@@ -195,7 +198,7 @@ class _SupportScreenState extends State<SupportScreen> {
                                           : Icons.keyboard_arrow_down_rounded,
                                       color: faq.expanded
                                           ? primary
-                                          : AppColors.greyText,
+                                          : c.textSecondary,
                                       size: 18,
                                     ),
                                   ),
@@ -203,14 +206,12 @@ class _SupportScreenState extends State<SupportScreen> {
                               ),
                               if (faq.expanded) ...[
                                 const SizedBox(height: 12),
-                                const Divider(
-                                    height: 1,
-                                    color: AppColors.surfaceHighlight),
+                                Divider(height: 1, color: c.border),
                                 const SizedBox(height: 12),
                                 Text(
                                   faq.answer,
-                                  style: const TextStyle(
-                                      color: AppColors.greyText,
+                                  style: TextStyle(
+                                      color: c.textSecondary,
                                       fontSize: 13,
                                       height: 1.5),
                                 ),
@@ -228,9 +229,10 @@ class _SupportScreenState extends State<SupportScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppColors.cardDark,
+                      color: c.card,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.surfaceHighlight),
+                      border: Border.all(color: c.border),
+                      boxShadow: c.glowShadow(),
                     ),
                     child: Column(
                       children: [
@@ -248,7 +250,7 @@ class _SupportScreenState extends State<SupportScreen> {
                         Text(
                           'Need more help?',
                           style: GoogleFonts.manrope(
-                            color: Colors.white,
+                            color: c.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -257,7 +259,7 @@ class _SupportScreenState extends State<SupportScreen> {
                         Text(
                           'Our team is happy to assist you',
                           style: GoogleFonts.manrope(
-                            color: AppColors.greyText,
+                            color: c.textSecondary,
                             fontSize: 13,
                           ),
                           textAlign: TextAlign.center,

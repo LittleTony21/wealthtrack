@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -43,6 +44,7 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final primary = Theme.of(context).primaryColor;
+    final c = WealthColors.of(context);
     final current = settings.currency;
 
     final filtered = _query.isEmpty
@@ -54,7 +56,7 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
             .toList();
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: const Text('Currency'),
         leading: IconButton(
@@ -67,12 +69,12 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: c.textPrimary),
               onChanged: (v) => setState(() => _query = v),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search currencies...',
                 prefixIcon: Icon(Icons.search_rounded,
-                    color: AppColors.greyText, size: 20),
+                    color: c.textSecondary, size: 20),
                 contentPadding: EdgeInsets.symmetric(vertical: 12),
               ),
             ),
@@ -104,12 +106,10 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? primary.withValues(alpha: 0.1)
-                          : AppColors.cardDark,
+                          : c.card,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected
-                            ? primary
-                            : AppColors.surfaceHighlight,
+                        color: isSelected ? primary : c.border,
                       ),
                     ),
                     child: Row(
@@ -123,9 +123,7 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
                               Text(
                                 code,
                                 style: TextStyle(
-                                  color: isSelected
-                                      ? primary
-                                      : Colors.white,
+                                  color: isSelected ? primary : c.textPrimary,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -133,7 +131,7 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
                               Text(
                                 '$name • $symbol',
                                 style: GoogleFonts.manrope(
-                                  color: AppColors.greyText,
+                                  color: c.textSecondary,
                                   fontSize: 12,
                                 ),
                               ),

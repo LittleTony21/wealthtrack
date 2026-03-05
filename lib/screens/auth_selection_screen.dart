@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
+import '../config/theme_colors.dart';
 import '../models/user_profile.dart';
 import '../providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
@@ -81,8 +82,9 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -92,8 +94,8 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded,
-                        color: Colors.white),
+                    icon: Icon(Icons.arrow_back_rounded,
+                        color: c.textPrimary),
                     onPressed: () => context.go('/'),
                   ),
                   const Spacer(),
@@ -131,7 +133,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                     Text(
                       'Welcome to WealthTrack',
                       style: GoogleFonts.manrope(
-                        color: Colors.white,
+                        color: c.textPrimary,
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
                       ),
@@ -141,7 +143,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                     Text(
                       'Choose how you want to continue',
                       style: GoogleFonts.manrope(
-                        color: AppColors.greyText,
+                        color: c.textSecondary,
                         fontSize: 15,
                       ),
                     ),
@@ -217,7 +219,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                         Text(
                           'Already have an account? ',
                           style: GoogleFonts.manrope(
-                              color: AppColors.greyText, fontSize: 14),
+                              color: c.textSecondary, fontSize: 14),
                         ),
                         GestureDetector(
                           onTap: () => context.go('/login'),
@@ -259,33 +261,34 @@ class _SocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = WealthColors.of(context);
     return GestureDetector(
       onTap: loading ? null : onTap,
       child: Container(
         width: double.infinity,
         height: 56,
         decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
+          color: c.surface,
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.surfaceHighlight),
+          border: Border.all(color: c.border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (loading)
-              const SizedBox(
+              SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
+                    strokeWidth: 2, color: c.textPrimary),
               )
             else ...[
-              Icon(icon, color: Colors.white, size: 22),
+              Icon(icon, color: c.textPrimary, size: 22),
               const SizedBox(width: 12),
               Text(
                 label,
                 style: GoogleFonts.manrope(
-                  color: Colors.white,
+                  color: c.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
