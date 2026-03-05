@@ -152,7 +152,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                         const SizedBox(height: 6),
                         Text(
                           av.name.split(' ').first,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: c.textSecondary, fontSize: 10),
                           overflow: TextOverflow.ellipsis,
                         ),

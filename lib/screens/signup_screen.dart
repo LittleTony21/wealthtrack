@@ -226,7 +226,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               onChanged: (v) =>
                                   setState(() => _termsAccepted = v ?? false),
                               activeColor: AppColors.primary,
-                              side: const BorderSide(
+                              side: BorderSide(
                                   color: c.textSecondary),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4)),

@@ -221,7 +221,7 @@ class _LiabilitiesScreenState extends ConsumerState<LiabilitiesScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.credit_card_rounded,
+                                Icon(Icons.credit_card_rounded,
                                     color: c.textSecondary, size: 56),
                                 const SizedBox(height: 16),
                                 Text(
