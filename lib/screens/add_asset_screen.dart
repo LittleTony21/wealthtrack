@@ -8,6 +8,9 @@ import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../models/asset.dart';
 import '../providers/assets_provider.dart';
+import '../providers/liabilities_provider.dart';
+import '../providers/milestone_queue_provider.dart';
+import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/premium_service.dart';
 import '../widgets/premium_sheet.dart';
@@ -256,6 +259,30 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
       } else {
         await ref.read(assetsProvider.notifier).add(asset);
       }
+
+      // Check milestones with updated counts (stream may not have fired yet)
+      final profile = ref.read(profileProvider).valueOrNull;
+      if (profile != null) {
+        final currentAssets = ref.read(assetsProvider).valueOrNull ?? [];
+        final liabs = ref.read(liabilitiesProvider).valueOrNull ?? [];
+        final assetCount = currentAssets.length;
+        final nw = currentAssets.fold(0.0, (s, a) => s + a.currentValue)
+            - liabs.fold(0.0, (s, l) => s + l.balance);
+        ref.read(profileProvider.notifier).checkAndAwardMilestones(
+          netWorth: nw,
+          assetCount: assetCount,
+          liabilityCount: liabs.length,
+          streak: profile.streak,
+          isPremium: profile.isPremium,
+          hasUnlockedFeature: profile.unlockedFeatures.isNotEmpty,
+          coins: profile.coins,
+        ).then((earned) {
+          if (earned.isNotEmpty) {
+            ref.read(milestoneQueueProvider.notifier).enqueue(earned);
+          }
+        });
+      }
+
       if (mounted) context.pop();
     } catch (e) {
       setState(() => _error = e.toString());

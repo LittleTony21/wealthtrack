@@ -180,9 +180,133 @@ class _StampCard extends StatelessWidget {
     required this.primary,
   });
 
+  void _showDetail(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 48),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: c.border),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(milestone.emoji, style: const TextStyle(fontSize: 44)),
+              const SizedBox(height: 12),
+              Text(
+                milestone.name,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.manrope(
+                  color: isEarned ? const Color(0xFFFFB340) : c.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Status chip
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isEarned
+                      ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
+                      : c.border.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  isEarned ? '✓ Earned' : 'Locked',
+                  style: GoogleFonts.manrope(
+                    color: isEarned ? const Color(0xFF4CAF50) : c.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // How to get it
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: primary.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: primary.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isEarned ? 'Completed' : 'How to earn',
+                      style: GoogleFonts.manrope(
+                        color: c.textSecondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      milestone.description,
+                      style: GoogleFonts.manrope(
+                        color: c.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Coin reward
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.monetization_on_rounded,
+                      size: 16, color: Color(0xFFFFB340)),
+                  const SizedBox(width: 4),
+                  Text(
+                    '+${milestone.coinReward} coin${milestone.coinReward == 1 ? '' : 's'}',
+                    style: GoogleFonts.manrope(
+                      color: const Color(0xFFFFB340),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    backgroundColor: c.border.withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text('Close',
+                      style: GoogleFonts.manrope(
+                          color: c.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Opacity(
+    return GestureDetector(
+      onTap: () => _showDetail(context),
+      child: Opacity(
       opacity: isEarned ? 1.0 : 0.35,
       child: CustomPaint(
         painter: _StampBorderPainter(
@@ -263,6 +387,7 @@ class _StampCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

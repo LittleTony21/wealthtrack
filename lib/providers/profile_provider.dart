@@ -18,14 +18,20 @@ class ProfileNotifier extends StateNotifier<AsyncValue<UserProfile?>> {
           .doc(uid)
           .snapshots()
           .listen(
-        (doc) {
+        (doc) async {
           if (doc.exists && doc.data() != null) {
             state = AsyncValue.data(UserProfile.fromJson({
               'id': uid,
               ...doc.data()!,
             }));
           } else {
-            state = const AsyncValue.data(null);
+            // Doc missing (e.g. accidentally deleted) — recreate with defaults
+            final defaults = const UserProfile(id: '', userName: '', userAvatar: 'avatar1').toJson()
+              ..remove('id');
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .set(defaults, SetOptions(merge: true));
           }
         },
         onError: (e, st) => state = AsyncValue.error(e, st),

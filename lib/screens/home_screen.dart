@@ -12,6 +12,7 @@ import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/bottom_nav.dart';
 import '../widgets/check_in_dialog.dart';
+import '../providers/milestone_queue_provider.dart';
 import '../widgets/milestone_dialog.dart';
 import '../widgets/premium_sheet.dart';
 import '../services/premium_service.dart';
@@ -70,12 +71,8 @@ class HomeScreen extends ConsumerWidget {
         hasUnlockedFeature: profile.unlockedFeatures.isNotEmpty,
         coins: profile.coins,
       ).then((earned) {
-        if (earned.isEmpty || !context.mounted) return;
-        for (final m in earned) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('🏆 ${m.name} earned! +${m.coinReward} coin${m.coinReward == 1 ? '' : 's'}'),
-            duration: const Duration(seconds: 3),
-          ));
+        if (earned.isNotEmpty) {
+          ref.read(milestoneQueueProvider.notifier).enqueue(earned);
         }
       });
     }

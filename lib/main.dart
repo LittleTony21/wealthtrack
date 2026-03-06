@@ -8,6 +8,7 @@ import 'providers/settings_provider.dart';
 import 'providers/profile_provider.dart';
 import 'providers/pin_provider.dart';
 import 'screens/pin_lock_screen.dart';
+import 'widgets/milestone_celebration.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -88,6 +89,12 @@ class _WealthTrackAppState extends ConsumerState<WealthTrackApp> {
       theme: theme,
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) => Stack(
+        children: [
+          child!,
+          const MilestoneCelebrationLayer(),
+        ],
+      ),
     );
   }
 }
