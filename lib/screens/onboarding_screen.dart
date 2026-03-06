@@ -162,7 +162,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       style: GoogleFonts.manrope(
                         color: c.textSecondary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -311,7 +311,7 @@ class _OnboardingStep extends StatelessWidget {
         Text(
           subtitle,
           style: GoogleFonts.manrope(
-              color: c.textSecondary, fontSize: 15),
+              color: c.textSecondary, fontSize: 15, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 32),
         child,
@@ -350,7 +350,7 @@ Widget _radio(
               style: TextStyle(
                 color: c.textPrimary,
                 fontSize: 15,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -460,7 +460,7 @@ class _StepAssetTypes extends StatelessWidget {
                       style: TextStyle(
                         color: wc.textPrimary,
                         fontSize: 15,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -685,7 +685,7 @@ class _StepAvatar extends StatelessWidget {
                   Text(
                     av.name.split(' ').first,
                     style: TextStyle(
-                        color: c.textSecondary, fontSize: 10),
+                        color: c.textSecondary, fontSize: 10, fontWeight: FontWeight.w600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -829,7 +829,7 @@ class _StepPinState extends State<_StepPin> {
             Text(
               'Enter your 4-digit PIN',
               style: GoogleFonts.manrope(
-                  color: WealthColors.of(context).textSecondary, fontSize: 14),
+                  color: WealthColors.of(context).textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             Row(

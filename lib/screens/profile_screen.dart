@@ -34,84 +34,98 @@ class ProfileScreen extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Header
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
-                      decoration: BoxDecoration(
-                        color: c.card,
-                        border: Border(
-                          bottom: BorderSide(color: c.border),
+                    // Header card — matches section card style
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: c.card,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: c.border),
+                          boxShadow: c.glowShadow(),
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Stack(
-                            children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: primary, width: 2),
-                                ),
-                                child: ClipOval(
-                                  child: Image.asset(
-                                    currentAvatarPath,
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(
-                                      color: primary.withValues(alpha: 0.15),
-                                      child: Center(
-                                        child: Text(
-                                          currentAvatarInitial,
-                                          style: TextStyle(
-                                              fontSize: 32,
-                                              color: primary,
-                                              fontWeight: FontWeight.w700),
+                        child: Row(
+                          children: [
+                            // Avatar with edit button
+                            Stack(
+                              children: [
+                                Container(
+                                  width: 76,
+                                  height: 76,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: primary, width: 2.5),
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.asset(
+                                      currentAvatarPath,
+                                      width: 76,
+                                      height: 76,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        color: primary.withValues(alpha: 0.15),
+                                        child: Center(
+                                          child: Text(
+                                            currentAvatarInitial,
+                                            style: TextStyle(
+                                                fontSize: 30,
+                                                color: primary,
+                                                fontWeight: FontWeight.w700),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () =>
-                                      context.push('/profile/personal-info'),
-                                  child: Container(
-                                    width: 26,
-                                    height: 26,
-                                    decoration: BoxDecoration(
-                                      color: primary,
-                                      shape: BoxShape.circle,
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        context.push('/profile/personal-info'),
+                                    child: Container(
+                                      width: 26,
+                                      height: 26,
+                                      decoration: BoxDecoration(
+                                        color: primary,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: c.card, width: 2),
+                                      ),
+                                      child: const Icon(Icons.edit_rounded,
+                                          color: Colors.white, size: 13),
                                     ),
-                                    child: const Icon(Icons.edit_rounded,
-                                        color: Colors.white, size: 14),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            profile?.userName ?? 'User',
-                            style: GoogleFonts.manrope(
-                              color: c.textPrimary,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Member',
-                            style: GoogleFonts.manrope(
-                                color: c.textSecondary, fontSize: 13),
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            // Name + Member
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    profile?.userName ?? 'User',
+                                    style: GoogleFonts.manrope(
+                                      color: c.textPrimary,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Member',
+                                    style: GoogleFonts.manrope(
+                                        color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -173,7 +187,7 @@ class ProfileScreen extends ConsumerWidget {
                               icon: const Icon(Icons.delete_forever_rounded,
                                   color: AppColors.danger, size: 20),
                               label: const Text('Delete Account',
-                                  style: TextStyle(color: AppColors.danger)),
+                                  style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: AppColors.danger),
                                 shape: RoundedRectangleBorder(
@@ -251,7 +265,7 @@ class ProfileScreen extends ConsumerWidget {
                                   color: AppColors.danger, size: 20),
                               label: const Text('Sign Out',
                                   style:
-                                      TextStyle(color: AppColors.danger)),
+                                      TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
                                     color: AppColors.danger),
@@ -409,13 +423,13 @@ class _MenuItem extends StatelessWidget {
                 style: TextStyle(
                     color: WealthColors.of(context).textPrimary,
                     fontSize: 15,
-                    fontWeight: FontWeight.w500),
+                    fontWeight: FontWeight.w600),
               ),
             ),
             if (trailing != null) ...[
               Text(trailing!,
                   style: TextStyle(
-                      color: WealthColors.of(context).textSecondary, fontSize: 13)),
+                      color: WealthColors.of(context).textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
               const SizedBox(width: 4),
             ],
             Icon(Icons.chevron_right_rounded,

@@ -9,6 +9,8 @@ import '../config/theme_colors.dart';
 import '../models/asset.dart';
 import '../providers/assets_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/premium_service.dart';
+import '../widgets/premium_sheet.dart';
 
 class AddAssetScreen extends ConsumerStatefulWidget {
   final Asset? existingAsset;
@@ -280,6 +282,9 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
       return '$sym${NumberFormat('#,##0.00').format(v)}';
     }
 
+    final hasIconAccess =
+        ref.watch(premiumAccessProvider(PremiumFeature.customIcons));
+
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
@@ -321,17 +326,32 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                           bottom: 0,
                           right: 0,
                           child: GestureDetector(
-                            onTap: () => _showIconPicker(context, primary, c),
+                            onTap: () {
+                              if (!hasIconAccess) {
+                                showPremiumSheet(context,
+                                    featureKey:
+                                        PremiumFeature.customIcons);
+                                return;
+                              }
+                              _showIconPicker(context, primary, c);
+                            },
                             child: Container(
                               width: 18,
                               height: 18,
                               decoration: BoxDecoration(
-                                color: primary,
+                                color: hasIconAccess
+                                    ? primary
+                                    : c.textSecondary,
                                 shape: BoxShape.circle,
                                 border: Border.all(color: c.card, width: 1.5),
                               ),
-                              child: const Icon(Icons.edit_rounded,
-                                  color: Colors.white, size: 9),
+                              child: Icon(
+                                hasIconAccess
+                                    ? Icons.edit_rounded
+                                    : Icons.lock_rounded,
+                                color: Colors.white,
+                                size: 9,
+                              ),
                             ),
                           ),
                         ),

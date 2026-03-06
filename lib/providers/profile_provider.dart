@@ -68,6 +68,26 @@ class ProfileNotifier extends StateNotifier<AsyncValue<UserProfile?>> {
     return true;
   }
 
+  Future<void> unlockFeatureWithCoins(String featureKey, int cost) async {
+    final profile = state.valueOrNull;
+    if (uid == null || profile == null) return;
+    if (profile.coins < cost) return;
+    if (profile.unlockedFeatures.contains(featureKey)) return;
+    final newFeatures = [...profile.unlockedFeatures, featureKey];
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'coins': profile.coins - cost,
+      'unlocked_features': newFeatures,
+    });
+  }
+
+  Future<void> upgradeToPremium() async {
+    if (uid == null) return;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .update({'is_premium': true});
+  }
+
   String _dateStr(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }

@@ -72,7 +72,7 @@ class AuthNotifier extends Notifier<void> {
     await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
-  /// Sign-in only — rejects if no existing account found.
+  /// Sign-in only — rejects if no existing Firestore profile found.
   Future<void> signInOnlyWithGoogle() async {
     final googleSignIn = GoogleSignIn();
     final googleUser = await googleSignIn.signIn();
@@ -83,11 +83,18 @@ class AuthNotifier extends Notifier<void> {
       idToken: googleAuth.idToken,
     );
     final result = await FirebaseAuth.instance.signInWithCredential(credential);
-    if (result.additionalUserInfo?.isNewUser == true) {
-      await result.user?.delete();
-      await googleSignIn.signOut();
-      throw Exception(
-          'No account found for this Google account. Please sign up first.');
+    final uid = result.user?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (!doc.exists) {
+        await FirebaseAuth.instance.signOut();
+        await googleSignIn.signOut();
+        throw Exception(
+            'No account found for this Google account. Please sign up first.');
+      }
     }
   }
 
@@ -105,7 +112,7 @@ class AuthNotifier extends Notifier<void> {
     await FirebaseAuth.instance.signInWithCredential(oauthCredential);
   }
 
-  /// Sign-in only — rejects if no existing account found.
+  /// Sign-in only — rejects if no existing Firestore profile found.
   Future<void> signInOnlyWithApple() async {
     final appleCredential = await SignInWithApple.getAppleIDCredential(
       scopes: [
@@ -117,10 +124,19 @@ class AuthNotifier extends Notifier<void> {
       idToken: appleCredential.identityToken,
       accessToken: appleCredential.authorizationCode,
     );
-    final result = await FirebaseAuth.instance.signInWithCredential(oauthCredential);
-    if (result.additionalUserInfo?.isNewUser == true) {
-      await result.user?.delete();
-      throw Exception('No account found for this Apple ID. Please sign up first.');
+    final result =
+        await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+    final uid = result.user?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (!doc.exists) {
+        await FirebaseAuth.instance.signOut();
+        throw Exception(
+            'No account found for this Apple ID. Please sign up first.');
+      }
     }
   }
 
@@ -184,3 +200,6 @@ class AuthNotifier extends Notifier<void> {
 }
 
 final authProvider = NotifierProvider<AuthNotifier, void>(() => AuthNotifier());
+
+/// Holds sign-in error messages across GoRouter-triggered widget rebuilds.
+final signInErrorProvider = StateProvider<String?>((ref) => null);

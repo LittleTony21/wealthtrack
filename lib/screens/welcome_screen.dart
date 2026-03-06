@@ -63,6 +63,7 @@ class WelcomeScreen extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     color: AppColors.greyText,
                     fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 48),
@@ -116,6 +117,7 @@ class WelcomeScreen extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       color: AppColors.greyText,
                       fontSize: 13,
+                      fontWeight: FontWeight.w600,
                       decoration: TextDecoration.underline,
                       decorationColor: AppColors.greyText,
                     ),
@@ -184,6 +186,7 @@ class _FeatureCard extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     color: AppColors.greyText,
                     fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],

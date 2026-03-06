@@ -84,6 +84,8 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
 
     final totalValue =
         allAssets.fold(0.0, (sum, a) => sum + a.currentValue);
+    final totalDailyDepreciation =
+        allAssets.fold(0.0, (sum, a) => sum + a.dailyDepreciation);
 
     return Scaffold(
       backgroundColor: c.background,
@@ -132,17 +134,34 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Total value (large, primary color)
+                  // Total Assets
                   Text(
                     'Total Assets',
                     style: GoogleFonts.manrope(
-                        color: c.textSecondary, fontSize: 13),
+                        color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     fmt(totalValue),
                     style: GoogleFonts.manrope(
                       color: primary,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Cost per day
+                  Text(
+                    'Cost / day',
+                    style: GoogleFonts.manrope(
+                        color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    fmt(totalDailyDepreciation),
+                    style: GoogleFonts.manrope(
+                      color: AppColors.danger,
                       fontSize: 32,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.5,
@@ -195,8 +214,8 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                                     : c.textSecondary,
                                 fontSize: 13,
                                 fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
                               ),
                             ),
                           ),
@@ -236,7 +255,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                                   'Tap + to add your first asset.',
                                   style: GoogleFonts.manrope(
                                       color: c.textSecondary,
-                                      fontSize: 14),
+                                      fontSize: 14, fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),

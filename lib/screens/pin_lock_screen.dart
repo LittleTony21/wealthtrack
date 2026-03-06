@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/pin_provider.dart';
 
 class PinLockScreen extends ConsumerStatefulWidget {
   const PinLockScreen({super.key});
@@ -57,7 +57,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
     final correctPin = profile?.pinCode ?? '';
 
     if (entered == correctPin && correctPin.isNotEmpty) {
-      context.go('/dashboard');
+      ref.read(pinUnlockedProvider.notifier).unlock();
     } else {
       setState(() => _error = true);
       _shakeCtrl.forward(from: 0);
@@ -106,7 +106,7 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
               Text(
                 'Enter your 4-digit PIN to continue',
                 style: GoogleFonts.manrope(
-                    color: c.textSecondary, fontSize: 14),
+                    color: c.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 48),
               AnimatedBuilder(
@@ -177,21 +177,20 @@ class _PinLockScreenState extends ConsumerState<PinLockScreen>
                 Text(
                   'Incorrect PIN. Try again.',
                   style: GoogleFonts.manrope(
-                      color: AppColors.danger, fontSize: 13),
+                      color: AppColors.danger, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ],
               const Spacer(),
               GestureDetector(
                 onTap: () async {
                   await ref.read(authProvider.notifier).signOut();
-                  if (!mounted) return;
-                  context.go('/');
                 },
                 child: Text(
                   'Sign out instead',
                   style: GoogleFonts.manrope(
                     color: c.textSecondary,
                     fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
                 ),

@@ -1,9 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'config/router.dart';
 import 'config/theme.dart';
 import 'providers/settings_provider.dart';
+import 'providers/profile_provider.dart';
+import 'providers/pin_provider.dart';
+import 'screens/pin_lock_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -54,6 +58,29 @@ class _WealthTrackAppState extends ConsumerState<WealthTrackApp> {
         break;
       default:
         theme = AppTheme.darkTheme(accent: accent);
+    }
+
+    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+    final profileAsync = ref.watch(profileProvider);
+    final pinUnlocked = ref.watch(pinUnlockedProvider);
+
+    // While profile is loading for a logged-in user, show blank to avoid flash
+    if (isLoggedIn && !pinUnlocked && profileAsync.isLoading) {
+      return MaterialApp(
+        theme: theme,
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(backgroundColor: theme.scaffoldBackgroundColor),
+      );
+    }
+
+    // Show PIN lock if enabled and not yet unlocked this session
+    final pinEnabled = profileAsync.valueOrNull?.pinEnabled ?? false;
+    if (isLoggedIn && pinEnabled && !pinUnlocked) {
+      return MaterialApp(
+        theme: theme,
+        debugShowCheckedModeBanner: false,
+        home: const PinLockScreen(),
+      );
     }
 
     return MaterialApp.router(

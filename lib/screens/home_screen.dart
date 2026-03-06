@@ -12,6 +12,8 @@ import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/bottom_nav.dart';
 import '../widgets/check_in_dialog.dart';
+import '../widgets/premium_sheet.dart';
+import '../services/premium_service.dart';
 import '../models/asset.dart';
 import '../models/liability.dart';
 
@@ -105,6 +107,23 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const Spacer(),
+                  GestureDetector(
+                    onTap: () => showPremiumSheet(context),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.lock_rounded,
+                        color: primary,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => showDialog(
                       context: context,
@@ -316,7 +335,7 @@ typedef _ChartData = ({
   int totalDays,
 });
 
-class _NetWorthChart extends StatefulWidget {
+class _NetWorthChart extends ConsumerStatefulWidget {
   final List<Asset> assets;
   final List<Liability> liabilities;
   final String currency;
@@ -328,10 +347,10 @@ class _NetWorthChart extends StatefulWidget {
   });
 
   @override
-  State<_NetWorthChart> createState() => _NetWorthChartState();
+  ConsumerState<_NetWorthChart> createState() => _NetWorthChartState();
 }
 
-class _NetWorthChartState extends State<_NetWorthChart> {
+class _NetWorthChartState extends ConsumerState<_NetWorthChart> {
   _ChartRange _range = _ChartRange.oneMonth;
 
   String _fmtValue(double amount) {
@@ -374,12 +393,12 @@ class _NetWorthChartState extends State<_NetWorthChart> {
     return assetValue - liabilityValue;
   }
 
-  _ChartData _buildChartData() {
+  _ChartData _buildChartData(_ChartRange range) {
     final now = DateTime.now();
     DateTime rangeStart;
     int pointCount;
 
-    switch (_range) {
+    switch (range) {
       case _ChartRange.oneMonth:
         rangeStart = now.subtract(const Duration(days: 30));
         pointCount = 31;
@@ -420,7 +439,11 @@ class _NetWorthChartState extends State<_NetWorthChart> {
   Widget build(BuildContext context) {
     final c = WealthColors.of(context);
     final primary = Theme.of(context).primaryColor;
-    final data = _buildChartData();
+    final hasChartAccess =
+        ref.watch(premiumAccessProvider(PremiumFeature.chartTabs));
+    final effectiveRange =
+        hasChartAccess ? _range : _ChartRange.allTime;
+    final data = _buildChartData(effectiveRange);
     final spots = data.spots;
     final rangeStart = data.rangeStart;
     final totalDays = data.totalDays;
@@ -468,9 +491,18 @@ class _NetWorthChartState extends State<_NetWorthChart> {
                       fontWeight: FontWeight.w600)),
               Row(
                 children: tabs.map((tab) {
-                  final isSelected = _range == tab.$2;
+                  final isAllTab = tab.$2 == _ChartRange.allTime;
+                  final isLocked = !hasChartAccess && !isAllTab;
+                  final isSelected = effectiveRange == tab.$2;
                   return GestureDetector(
-                    onTap: () => setState(() => _range = tab.$2),
+                    onTap: () {
+                      if (isLocked) {
+                        showPremiumSheet(context,
+                            featureKey: PremiumFeature.chartTabs);
+                        return;
+                      }
+                      setState(() => _range = tab.$2);
+                    },
                     child: Container(
                       margin: const EdgeInsets.only(left: 6),
                       padding: const EdgeInsets.symmetric(
@@ -485,12 +517,28 @@ class _NetWorthChartState extends State<_NetWorthChart> {
                           width: isSelected ? 1.5 : 1,
                         ),
                       ),
-                      child: Text(tab.$1,
-                          style: TextStyle(
-                              color:
-                                  isSelected ? lineColor : c.textSecondary,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isLocked) ...[
+                            Icon(Icons.lock_rounded,
+                                size: 9,
+                                color: c.textSecondary
+                                    .withValues(alpha: 0.5)),
+                            const SizedBox(width: 3),
+                          ],
+                          Text(tab.$1,
+                              style: TextStyle(
+                                  color: isLocked
+                                      ? c.textSecondary
+                                          .withValues(alpha: 0.5)
+                                      : isSelected
+                                          ? lineColor
+                                          : c.textSecondary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700)),
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),

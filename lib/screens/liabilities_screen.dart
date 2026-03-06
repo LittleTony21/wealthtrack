@@ -84,6 +84,8 @@ class _LiabilitiesScreenState extends ConsumerState<LiabilitiesScreen> {
 
     final totalBalance =
         allLiabs.fold(0.0, (sum, l) => sum + l.balance);
+    final totalDailyPayment =
+        allLiabs.fold(0.0, (sum, l) => sum + l.dailyPayment);
 
     return Scaffold(
       backgroundColor: c.background,
@@ -132,15 +134,32 @@ class _LiabilitiesScreenState extends ConsumerState<LiabilitiesScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Total value (large, danger color)
+                  // Total Liabilities
                   Text(
                     'Total Liabilities',
                     style: GoogleFonts.manrope(
-                        color: c.textSecondary, fontSize: 13),
+                        color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     fmt(totalBalance),
+                    style: GoogleFonts.manrope(
+                      color: AppColors.danger,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Repaying per day
+                  Text(
+                    'Repaying / day',
+                    style: GoogleFonts.manrope(
+                        color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    fmt(totalDailyPayment),
                     style: GoogleFonts.manrope(
                       color: AppColors.danger,
                       fontSize: 32,
@@ -195,8 +214,8 @@ class _LiabilitiesScreenState extends ConsumerState<LiabilitiesScreen> {
                                     : c.textSecondary,
                                 fontSize: 13,
                                 fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
                               ),
                             ),
                           ),
@@ -237,7 +256,7 @@ class _LiabilitiesScreenState extends ConsumerState<LiabilitiesScreen> {
                                   'Tap + to add a loan or debt.',
                                   style: GoogleFonts.manrope(
                                       color: c.textSecondary,
-                                      fontSize: 14),
+                                      fontSize: 14, fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),

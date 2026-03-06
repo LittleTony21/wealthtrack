@@ -9,6 +9,8 @@ import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../providers/assets_provider.dart';
 import '../providers/liabilities_provider.dart';
+import '../services/premium_service.dart';
+import '../widgets/premium_sheet.dart';
 
 class DataExportScreen extends ConsumerWidget {
   const DataExportScreen({super.key});
@@ -51,6 +53,8 @@ class DataExportScreen extends ConsumerWidget {
     final liabsAsync = ref.watch(liabilitiesProvider);
     final primary = Theme.of(context).primaryColor;
     final c = WealthColors.of(context);
+    final hasExportAccess =
+        ref.watch(premiumAccessProvider(PremiumFeature.export_));
 
     final assets = assetsAsync.valueOrNull ?? [];
     final liabilities = liabsAsync.valueOrNull ?? [];
@@ -66,50 +70,104 @@ class DataExportScreen extends ConsumerWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Export your data as CSV',
-              style: GoogleFonts.manrope(
-                  color: c.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            _ExportCard(
-              icon: Icons.account_balance_wallet_rounded,
-              title: 'Export Assets',
-              subtitle: '${assets.length} asset${assets.length == 1 ? '' : 's'} tracked',
-              color: primary,
-              enabled: assets.isNotEmpty,
-              onTap: () async =>
-                  _exportFile(context, _assetsCSV(assets), 'assets_export'),
-            ),
-            const SizedBox(height: 12),
-            _ExportCard(
-              icon: Icons.credit_card_rounded,
-              title: 'Export Liabilities',
-              subtitle:
-                  '${liabilities.length} liabilit${liabilities.length == 1 ? 'y' : 'ies'} tracked',
-              color: AppColors.danger,
-              enabled: liabilities.isNotEmpty,
-              onTap: () async => _exportFile(
-                  context, _liabilitiesCSV(liabilities), 'liabilities_export'),
-            ),
-            const SizedBox(height: 12),
-            _ExportCard(
-              icon: Icons.download_rounded,
-              title: 'Export All',
-              subtitle: 'Assets + Liabilities combined',
-              color: const Color(0xFFFFB340),
-              enabled: assets.isNotEmpty || liabilities.isNotEmpty,
-              onTap: () async => _exportFile(
-                context,
-                'ASSETS\n${_assetsCSV(assets)}\nLIABILITIES\n${_liabilitiesCSV(liabilities)}',
-                'wealthtrack_export',
+        child: hasExportAccess
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Export your data as CSV',
+                    style: GoogleFonts.manrope(
+                        color: c.textSecondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 24),
+                  _ExportCard(
+                    icon: Icons.account_balance_wallet_rounded,
+                    title: 'Export Assets',
+                    subtitle:
+                        '${assets.length} asset${assets.length == 1 ? '' : 's'} tracked',
+                    color: primary,
+                    enabled: assets.isNotEmpty,
+                    onTap: () async => _exportFile(
+                        context, _assetsCSV(assets), 'assets_export'),
+                  ),
+                  const SizedBox(height: 12),
+                  _ExportCard(
+                    icon: Icons.credit_card_rounded,
+                    title: 'Export Liabilities',
+                    subtitle:
+                        '${liabilities.length} liabilit${liabilities.length == 1 ? 'y' : 'ies'} tracked',
+                    color: AppColors.danger,
+                    enabled: liabilities.isNotEmpty,
+                    onTap: () async => _exportFile(context,
+                        _liabilitiesCSV(liabilities), 'liabilities_export'),
+                  ),
+                  const SizedBox(height: 12),
+                  _ExportCard(
+                    icon: Icons.download_rounded,
+                    title: 'Export All',
+                    subtitle: 'Assets + Liabilities combined',
+                    color: const Color(0xFFFFB340),
+                    enabled: assets.isNotEmpty || liabilities.isNotEmpty,
+                    onTap: () async => _exportFile(
+                      context,
+                      'ASSETS\n${_assetsCSV(assets)}\nLIABILITIES\n${_liabilitiesCSV(liabilities)}',
+                      'wealthtrack_export',
+                    ),
+                  ),
+                ],
+              )
+            : Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child:
+                          Icon(Icons.lock_rounded, color: primary, size: 32),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Export Data',
+                      style: GoogleFonts.manrope(
+                          color: c.textPrimary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Unlock to export your assets and\nliabilities as CSV files.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.manrope(
+                          color: c.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => showPremiumSheet(context,
+                          featureKey: PremiumFeature.export_),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: Text(
+                        'Unlock Export',
+                        style: GoogleFonts.manrope(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -170,7 +228,7 @@ class _ExportCard extends StatelessWidget {
                             fontWeight: FontWeight.w600)),
                     Text(subtitle,
                         style: TextStyle(
-                            color: c.textSecondary, fontSize: 12)),
+                            color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),

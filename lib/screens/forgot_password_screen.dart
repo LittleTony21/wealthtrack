@@ -89,7 +89,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 Text(
                   "Enter your email and we'll send you a reset link.",
                   style: GoogleFonts.manrope(
-                      color: c.textSecondary, fontSize: 15),
+                      color: c.textSecondary, fontSize: 15, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 36),
                 TextFormField(
@@ -106,7 +106,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   const SizedBox(height: 12),
                   Text(_error!,
                       style: const TextStyle(
-                          color: AppColors.danger, fontSize: 13)),
+                          color: AppColors.danger, fontSize: 13, fontWeight: FontWeight.w600)),
                 ],
                 const SizedBox(height: 24),
                 SizedBox(
@@ -147,7 +147,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 Text(
                   "We've sent a password reset link to ${_emailCtrl.text.trim()}.",
                   style: GoogleFonts.manrope(
-                      color: c.textSecondary, fontSize: 15),
+                      color: c.textSecondary, fontSize: 15, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 36),
                 SizedBox(

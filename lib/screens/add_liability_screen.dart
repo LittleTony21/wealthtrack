@@ -9,6 +9,8 @@ import '../config/theme_colors.dart';
 import '../models/liability.dart';
 import '../providers/liabilities_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/premium_service.dart';
+import '../widgets/premium_sheet.dart';
 
 class AddLiabilityScreen extends ConsumerStatefulWidget {
   final Liability? existingLiability;
@@ -269,6 +271,8 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
     final settings = ref.watch(settingsProvider);
     final c = WealthColors.of(context);
     final currency = settings.currency;
+    final hasIconAccess =
+        ref.watch(premiumAccessProvider(PremiumFeature.customIcons));
 
     String fmt(double v) {
       final symbols = {
@@ -324,17 +328,31 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                           bottom: 0,
                           right: 0,
                           child: GestureDetector(
-                            onTap: () => _showIconPicker(context, c),
+                            onTap: () {
+                              if (!hasIconAccess) {
+                                showPremiumSheet(context,
+                                    featureKey: PremiumFeature.customIcons);
+                                return;
+                              }
+                              _showIconPicker(context, c);
+                            },
                             child: Container(
                               width: 18,
                               height: 18,
                               decoration: BoxDecoration(
-                                color: AppColors.danger,
+                                color: hasIconAccess
+                                    ? AppColors.danger
+                                    : c.textSecondary,
                                 shape: BoxShape.circle,
                                 border: Border.all(color: c.card, width: 1.5),
                               ),
-                              child: const Icon(Icons.edit_rounded,
-                                  color: Colors.white, size: 9),
+                              child: Icon(
+                                hasIconAccess
+                                    ? Icons.edit_rounded
+                                    : Icons.lock_rounded,
+                                color: Colors.white,
+                                size: 9,
+                              ),
                             ),
                           ),
                         ),

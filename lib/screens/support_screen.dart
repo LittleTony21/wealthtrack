@@ -179,7 +179,7 @@ class _SupportScreenState extends State<SupportScreen> {
                                         fontSize: 14,
                                         fontWeight: faq.expanded
                                             ? FontWeight.w700
-                                            : FontWeight.w500,
+                                            : FontWeight.w600,
                                       ),
                                     ),
                                   ),
@@ -213,6 +213,7 @@ class _SupportScreenState extends State<SupportScreen> {
                                   style: TextStyle(
                                       color: c.textSecondary,
                                       fontSize: 13,
+                                      fontWeight: FontWeight.w600,
                                       height: 1.5),
                                 ),
                               ],
@@ -261,6 +262,7 @@ class _SupportScreenState extends State<SupportScreen> {
                           style: GoogleFonts.manrope(
                             color: c.textSecondary,
                             fontSize: 13,
+                            fontWeight: FontWeight.w600,
                           ),
                           textAlign: TextAlign.center,
                         ),

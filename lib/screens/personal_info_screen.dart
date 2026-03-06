@@ -8,6 +8,8 @@ import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../models/user_profile.dart';
 import '../providers/profile_provider.dart';
+import '../services/premium_service.dart';
+import '../widgets/premium_sheet.dart';
 
 class PersonalInfoScreen extends ConsumerStatefulWidget {
   const PersonalInfoScreen({super.key});
@@ -69,6 +71,8 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     _initFromProfile();
     final primary = Theme.of(context).primaryColor;
     final c = WealthColors.of(context);
+    final hasAvatarAccess =
+        ref.watch(premiumAccessProvider(PremiumFeature.avatars));
 
     return Scaffold(
       backgroundColor: c.background,
@@ -107,8 +111,16 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
               itemBuilder: (_, i) {
                 final av = kAvatarList[i];
                 final isSelected = _selectedAvatar == av.id;
+                final isLocked = !hasAvatarAccess && av.id != 'avatar1';
                 return GestureDetector(
-                  onTap: () => setState(() => _selectedAvatar = av.id),
+                  onTap: () {
+                    if (isLocked) {
+                      showPremiumSheet(context,
+                          featureKey: PremiumFeature.avatars);
+                      return;
+                    }
+                    setState(() => _selectedAvatar = av.id);
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: isSelected
@@ -120,42 +132,67 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                         width: isSelected ? 2 : 1,
                       ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
-                          child: Image.asset(
-                            av.path,
-                            width: 56,
-                            height: 56,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: primary.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  av.name[0],
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      color: primary,
-                                      fontWeight: FontWeight.w700),
+                        Opacity(
+                          opacity: isLocked ? 0.4 : 1.0,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(40),
+                                child: Image.asset(
+                                  av.path,
+                                  width: 56,
+                                  height: 56,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      color: primary.withValues(alpha: 0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        av.name[0],
+                                        style: TextStyle(
+                                            fontSize: 22,
+                                            color: primary,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                              const SizedBox(height: 6),
+                              Text(
+                                av.name.split(' ').first,
+                                style: TextStyle(
+                                    color: c.textSecondary,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          av.name.split(' ').first,
-                          style: TextStyle(
-                              color: c.textSecondary, fontSize: 10),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        if (isLocked)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: c.textSecondary.withValues(alpha: 0.8),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.lock_rounded,
+                                  color: Colors.white, size: 10),
+                            ),
+                          ),
                       ],
                     ),
                   ),

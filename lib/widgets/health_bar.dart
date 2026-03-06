@@ -34,7 +34,7 @@ class HealthBar extends StatelessWidget {
           style: TextStyle(
             color: _color,
             fontSize: 11,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

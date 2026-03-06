@@ -145,6 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           style: GoogleFonts.manrope(
                             color: c.textSecondary,
                             fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -234,7 +235,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: Text(_error!,
                                     style: const TextStyle(
                                         color: AppColors.danger,
-                                        fontSize: 13)),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600)),
                               ),
                             ],
                           ),
@@ -277,7 +279,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             Text(
                               "Don't have an account? ",
                               style: GoogleFonts.manrope(
-                                  color: c.textSecondary, fontSize: 14),
+                                  color: c.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                             GestureDetector(
                               onTap: () => context.go('/signup'),
@@ -317,7 +319,7 @@ class _FieldLabel extends StatelessWidget {
       style: GoogleFonts.manrope(
         color: WealthColors.of(context).textPrimary,
         fontSize: 14,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

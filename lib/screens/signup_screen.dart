@@ -237,7 +237,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             child: Text(
                               'I agree to the Terms of Service and Privacy Policy',
                               style: GoogleFonts.manrope(
-                                  color: c.textSecondary, fontSize: 13),
+                                  color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
@@ -263,7 +263,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                 child: Text(_error!,
                                     style: const TextStyle(
                                         color: AppColors.danger,
-                                        fontSize: 13)),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600)),
                               ),
                             ],
                           ),
@@ -306,7 +307,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             Text(
                               'Already have an account? ',
                               style: GoogleFonts.manrope(
-                                  color: c.textSecondary, fontSize: 14),
+                                  color: c.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                             GestureDetector(
                               onTap: () => context.go('/login'),
@@ -346,7 +347,7 @@ class _FieldLabel extends StatelessWidget {
       style: GoogleFonts.manrope(
         color: WealthColors.of(context).textPrimary,
         fontSize: 14,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

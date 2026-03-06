@@ -11,6 +11,8 @@ class UserProfile {
   final int streak;
   final String lastCheckIn; // 'YYYY-MM-DD' or ''
   final List<String> checkInDates; // all checked-in dates as 'YYYY-MM-DD'
+  final bool isPremium;
+  final List<String> unlockedFeatures; // coin-unlocked feature keys
 
   const UserProfile({
     required this.id,
@@ -25,6 +27,8 @@ class UserProfile {
     this.streak = 0,
     this.lastCheckIn = '',
     this.checkInDates = const [],
+    this.isPremium = false,
+    this.unlockedFeatures = const [],
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -41,6 +45,11 @@ class UserProfile {
       streak: (json['streak'] as int?) ?? 0,
       lastCheckIn: (json['last_check_in'] as String?) ?? '',
       checkInDates: (json['check_in_dates'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      isPremium: (json['is_premium'] as bool?) ?? false,
+      unlockedFeatures: (json['unlocked_features'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -61,6 +70,8 @@ class UserProfile {
       'streak': streak,
       'last_check_in': lastCheckIn,
       'check_in_dates': checkInDates,
+      'is_premium': isPremium,
+      'unlocked_features': unlockedFeatures,
     };
   }
 
@@ -77,6 +88,8 @@ class UserProfile {
     int? streak,
     String? lastCheckIn,
     List<String>? checkInDates,
+    bool? isPremium,
+    List<String>? unlockedFeatures,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -91,6 +104,8 @@ class UserProfile {
       streak: streak ?? this.streak,
       lastCheckIn: lastCheckIn ?? this.lastCheckIn,
       checkInDates: checkInDates ?? this.checkInDates,
+      isPremium: isPremium ?? this.isPremium,
+      unlockedFeatures: unlockedFeatures ?? this.unlockedFeatures,
     );
   }
 }

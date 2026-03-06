@@ -59,6 +59,7 @@ class VerifyEmailScreen extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     color: AppColors.greyText,
                     fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -78,6 +79,7 @@ class VerifyEmailScreen extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     color: AppColors.greyText,
                     fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -154,6 +156,7 @@ class VerifyEmailScreen extends StatelessWidget {
                           style: GoogleFonts.manrope(
                             color: AppColors.greyText,
                             fontSize: 13,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),

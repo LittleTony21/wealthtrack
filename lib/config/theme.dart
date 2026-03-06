@@ -15,6 +15,32 @@ class AppColors {
 }
 
 class AppTheme {
+  static TextTheme _boldTextTheme(TextTheme base) {
+    FontWeight _bump(FontWeight? w) {
+      if (w == null || w == FontWeight.w400 || w == FontWeight.w500) return FontWeight.w600;
+      if (w == FontWeight.w600) return FontWeight.w700;
+      return w;
+    }
+    TextStyle _b(TextStyle? s) => (s ?? const TextStyle()).copyWith(fontWeight: _bump(s?.fontWeight));
+    return base.copyWith(
+      displayLarge: _b(base.displayLarge),
+      displayMedium: _b(base.displayMedium),
+      displaySmall: _b(base.displaySmall),
+      headlineLarge: _b(base.headlineLarge),
+      headlineMedium: _b(base.headlineMedium),
+      headlineSmall: _b(base.headlineSmall),
+      titleLarge: _b(base.titleLarge),
+      titleMedium: _b(base.titleMedium),
+      titleSmall: _b(base.titleSmall),
+      bodyLarge: _b(base.bodyLarge),
+      bodyMedium: _b(base.bodyMedium),
+      bodySmall: _b(base.bodySmall),
+      labelLarge: _b(base.labelLarge),
+      labelMedium: _b(base.labelMedium),
+      labelSmall: _b(base.labelSmall),
+    );
+  }
+
   static ThemeData darkTheme({Color accent = const Color(0xFF05C293)}) {
     return ThemeData(
       brightness: Brightness.dark,
@@ -26,7 +52,7 @@ class AppTheme {
         onSurface: Colors.white,
         error: AppColors.danger,
       ),
-      textTheme: GoogleFonts.manropeTextTheme(ThemeData.dark().textTheme),
+      textTheme: _boldTextTheme(GoogleFonts.manropeTextTheme(ThemeData.dark().textTheme)),
       cardColor: AppColors.cardDark,
       dividerColor: AppColors.surfaceHighlight,
       appBarTheme: AppBarTheme(
@@ -59,8 +85,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.danger),
         ),
-        labelStyle: const TextStyle(color: AppColors.greyText),
-        hintStyle: const TextStyle(color: AppColors.greyText),
+        labelStyle: TextStyle(color: AppColors.greyText, fontWeight: FontWeight.w600),
+        hintStyle: TextStyle(color: AppColors.greyText, fontWeight: FontWeight.w600),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -72,7 +98,7 @@ class AppTheme {
           ),
           textStyle: GoogleFonts.manrope(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -90,7 +116,7 @@ class AppTheme {
         onSurface: const Color(0xFF0F1117),
         error: AppColors.danger,
       ),
-      textTheme: GoogleFonts.manropeTextTheme(ThemeData.light().textTheme),
+      textTheme: _boldTextTheme(GoogleFonts.manropeTextTheme(ThemeData.light().textTheme)),
       cardColor: Colors.white,
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.backgroundLight,
@@ -118,8 +144,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: accent, width: 1.5),
         ),
-        labelStyle: const TextStyle(color: Color(0xFF6B7280)),
-        hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+        labelStyle: TextStyle(color: Color(0xFF6B7280), fontWeight: FontWeight.w600),
+        hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontWeight: FontWeight.w600),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -131,7 +157,7 @@ class AppTheme {
           ),
           textStyle: GoogleFonts.manrope(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -150,7 +176,7 @@ class AppTheme {
         error: AppColors.danger,
         secondary: const Color(0xFF9B59B6),
       ),
-      textTheme: GoogleFonts.ibmPlexSansTextTheme(ThemeData.dark().textTheme),
+      textTheme: _boldTextTheme(GoogleFonts.ibmPlexSansTextTheme(ThemeData.dark().textTheme)),
       cardColor: const Color(0xFF100F1A),
       appBarTheme: AppBarTheme(
         backgroundColor: const Color(0xFF08070F),
@@ -178,8 +204,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: accent, width: 1.5),
         ),
-        labelStyle: TextStyle(color: accent.withValues(alpha: 0.7)),
-        hintStyle: const TextStyle(color: AppColors.greyText),
+        labelStyle: TextStyle(color: accent.withValues(alpha: 0.7), fontWeight: FontWeight.w600),
+        hintStyle: TextStyle(color: AppColors.greyText, fontWeight: FontWeight.w600),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -191,7 +217,7 @@ class AppTheme {
           ),
           textStyle: GoogleFonts.ibmPlexSans(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

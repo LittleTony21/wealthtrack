@@ -6,6 +6,8 @@ import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/premium_service.dart';
+import '../widgets/premium_sheet.dart';
 
 class CurrencyScreen extends ConsumerStatefulWidget {
   const CurrencyScreen({super.key});
@@ -46,6 +48,8 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
     final primary = Theme.of(context).primaryColor;
     final c = WealthColors.of(context);
     final current = settings.currency;
+    final hasCurrencyAccess =
+        ref.watch(premiumAccessProvider(PremiumFeature.currencies));
 
     final filtered = _query.isEmpty
         ? _currencies
@@ -85,8 +89,14 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
               itemBuilder: (_, i) {
                 final (code, name, symbol, flag) = filtered[i];
                 final isSelected = code == current;
+                final isLocked = !hasCurrencyAccess && code != 'USD';
                 return GestureDetector(
                   onTap: () async {
+                    if (isLocked) {
+                      showPremiumSheet(context,
+                          featureKey: PremiumFeature.currencies);
+                      return;
+                    }
                     await ref
                         .read(settingsProvider.notifier)
                         .setCurrency(code);
@@ -99,7 +109,9 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
                     }
                     if (context.mounted) context.pop();
                   },
-                  child: Container(
+                  child: Opacity(
+                    opacity: isLocked ? 0.5 : 1.0,
+                    child: Container(
                     margin: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 4),
                     padding: const EdgeInsets.all(14),
@@ -133,16 +145,21 @@ class _CurrencyScreenState extends ConsumerState<CurrencyScreen> {
                                 style: GoogleFonts.manrope(
                                   color: c.textSecondary,
                                   fontSize: 12,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        if (isSelected)
+                        if (isLocked)
+                          Icon(Icons.lock_rounded,
+                              color: c.textSecondary, size: 18)
+                        else if (isSelected)
                           Icon(Icons.check_circle_rounded,
                               color: primary, size: 22),
                       ],
                     ),
+                  ),
                   ),
                 );
               },

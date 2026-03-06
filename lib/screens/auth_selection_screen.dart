@@ -145,6 +145,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                       style: GoogleFonts.manrope(
                         color: c.textSecondary,
                         fontSize: 15,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 48),
@@ -203,7 +204,8 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                               child: Text(_error!,
                                   style: const TextStyle(
                                       color: AppColors.danger,
-                                      fontSize: 13)),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600)),
                             ),
                           ],
                         ),
@@ -219,7 +221,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                         Text(
                           'Already have an account? ',
                           style: GoogleFonts.manrope(
-                              color: c.textSecondary, fontSize: 14),
+                              color: c.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         GestureDetector(
                           onTap: () => context.go('/login'),

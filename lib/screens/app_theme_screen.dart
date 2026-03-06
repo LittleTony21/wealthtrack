@@ -6,6 +6,8 @@ import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/premium_service.dart';
+import '../widgets/premium_sheet.dart';
 
 class AppThemeScreen extends ConsumerWidget {
   const AppThemeScreen({super.key});
@@ -15,6 +17,8 @@ class AppThemeScreen extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final primary = Theme.of(context).primaryColor;
     final c = WealthColors.of(context);
+    final hasThemeAccess =
+        ref.watch(premiumAccessProvider(PremiumFeature.themes));
 
     final themes = [
       (
@@ -87,69 +91,100 @@ class AppThemeScreen extends ConsumerWidget {
               itemBuilder: (_, i) {
                 final (id, label, bg, card, accent) = themes[i];
                 final isSelected = settings.theme == id;
+                final isLocked = !hasThemeAccess && id != 'dark';
                 return GestureDetector(
-                  onTap: () => applyTheme(id),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: bg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected
-                            ? primary
-                            : accent.withValues(alpha: 0.3),
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Mini preview
-                          Row(
-                            children: [
-                              Container(
-                                width: 32,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: card,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: Container(
-                                    width: 20,
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color: accent,
-                                      borderRadius:
-                                          BorderRadius.circular(2),
+                  onTap: () {
+                    if (isLocked) {
+                      showPremiumSheet(context,
+                          featureKey: PremiumFeature.themes);
+                      return;
+                    }
+                    applyTheme(id);
+                  },
+                  child: Stack(
+                    children: [
+                      Opacity(
+                        opacity: isLocked ? 0.5 : 1.0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: bg,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected
+                                  ? primary
+                                  : accent.withValues(alpha: 0.3),
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 32,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        color: card,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Center(
+                                        child: Container(
+                                          width: 20,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: accent,
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  label,
-                                  style: GoogleFonts.manrope(
-                                    color: isSelected ? primary : Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                const Spacer(),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        label,
+                                        style: GoogleFonts.manrope(
+                                          color: isSelected
+                                              ? primary
+                                              : Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Icon(Icons.check_circle_rounded,
+                                          color: primary, size: 18),
+                                  ],
                                 ),
-                              ),
-                              if (isSelected)
-                                Icon(Icons.check_circle_rounded,
-                                    color: primary, size: 18),
-                            ],
+                              ],
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      if (isLocked)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            width: 22,
+                            height: 22,
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.lock_rounded,
+                                color: Colors.white, size: 12),
+                          ),
+                        ),
+                    ],
                   ),
                 );
               },

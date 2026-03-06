@@ -18,39 +18,34 @@ class _SignInSelectionScreenState
     extends ConsumerState<SignInSelectionScreen> {
   bool _googleLoading = false;
   bool _appleLoading = false;
-  String? _error;
 
   Future<void> _signInWithGoogle() async {
-    setState(() {
-      _googleLoading = true;
-      _error = null;
-    });
+    // Capture container before async gap — ref becomes invalid if GoRouter
+    // disposes this widget while signInWithCredential is in-flight.
+    final container = ProviderScope.containerOf(context);
+    container.read(signInErrorProvider.notifier).state = null;
+    setState(() => _googleLoading = true);
     try {
       await ref.read(authProvider.notifier).signInOnlyWithGoogle();
       if (mounted) context.go('/dashboard');
     } catch (e) {
-      if (mounted) {
-        final msg = e.toString().replaceFirst('Exception: ', '');
-        setState(() => _error = msg);
-      }
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      container.read(signInErrorProvider.notifier).state = msg;
     } finally {
       if (mounted) setState(() => _googleLoading = false);
     }
   }
 
   Future<void> _signInWithApple() async {
-    setState(() {
-      _appleLoading = true;
-      _error = null;
-    });
+    final container = ProviderScope.containerOf(context);
+    container.read(signInErrorProvider.notifier).state = null;
+    setState(() => _appleLoading = true);
     try {
       await ref.read(authProvider.notifier).signInOnlyWithApple();
       if (mounted) context.go('/dashboard');
     } catch (e) {
-      if (mounted) {
-        final msg = e.toString().replaceFirst('Exception: ', '');
-        setState(() => _error = msg);
-      }
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      container.read(signInErrorProvider.notifier).state = msg;
     } finally {
       if (mounted) setState(() => _appleLoading = false);
     }
@@ -59,6 +54,8 @@ class _SignInSelectionScreenState
   @override
   Widget build(BuildContext context) {
     final c = WealthColors.of(context);
+    final error = ref.watch(signInErrorProvider);
+
     return Scaffold(
       backgroundColor: c.background,
       body: SafeArea(
@@ -115,6 +112,7 @@ class _SignInSelectionScreenState
                       style: GoogleFonts.manrope(
                         color: c.textSecondary,
                         fontSize: 15,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 48),
@@ -153,7 +151,7 @@ class _SignInSelectionScreenState
                       onTap: _signInWithApple,
                     ),
 
-                    if (_error != null) ...[
+                    if (error != null) ...[
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -169,9 +167,9 @@ class _SignInSelectionScreenState
                                 color: AppColors.danger, size: 18),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(_error!,
+                              child: Text(error,
                                   style: const TextStyle(
-                                      color: AppColors.danger, fontSize: 13)),
+                                      color: AppColors.danger, fontSize: 13, fontWeight: FontWeight.w600)),
                             ),
                           ],
                         ),
