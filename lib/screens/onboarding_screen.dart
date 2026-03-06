@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../config/avatars.dart';
 import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../models/user_profile.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/profile_provider.dart';
-import '../providers/settings_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -32,25 +30,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String? _mostValuable;
   // Step 5 — know net worth
   String? _knowsNetWorth;
-  // Step 6 — currency
-  String _currency = 'USD';
-  // Step 7 — name
+  // Step 6 — name
   final _nameCtrl = TextEditingController();
-  // Step 8 — avatar
-  String _avatar = 'avatar1';
-  // Step 9 — theme
-  String _theme = 'dark';
-  // Step 10 — pin
-  String? _pinEnabled;
-  final List<TextEditingController> _pinCtrls =
-      List.generate(4, (_) => TextEditingController());
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    for (final c in _pinCtrls) {
-      c.dispose();
-    }
     super.dispose();
   }
 
@@ -68,17 +53,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         return _knowsNetWorth != null;
       case 5:
         return true;
-      case 6:
-        return true;
-      case 7:
-        return true;
-      case 8:
-        return true;
-      case 9:
-        if (_pinEnabled == 'yes') {
-          return _pinCtrls.every((c) => c.text.isNotEmpty);
-        }
-        return _pinEnabled != null;
       default:
         return false;
     }
@@ -87,9 +61,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _finish() async {
     setState(() => _saving = true);
     try {
-      await ref.read(settingsProvider.notifier).setTheme(_theme);
-      await ref.read(settingsProvider.notifier).setCurrency(_currency);
-
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
@@ -97,11 +68,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         final profile = UserProfile(
           id: user.uid,
           userName: _nameCtrl.text.trim(),
-          userAvatar: _avatar,
-          pinEnabled: _pinEnabled == 'yes',
-          pinCode: _pinEnabled == 'yes'
-              ? _pinCtrls.map((c) => c.text).join()
-              : '',
+          userAvatar: 'avatar1',
+          pinEnabled: false,
+          pinCode: '',
         );
         await ref.read(profileProvider.notifier).update(profile);
         if (mounted) context.go('/dashboard');
@@ -109,13 +78,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // Came from Welcome → Get Started — not logged in yet, store in memory
         ref.read(onboardingProvider.notifier).save(
               name: _nameCtrl.text.trim(),
-              avatar: _avatar,
-              currency: _currency,
-              theme: _theme,
-              pinEnabled: _pinEnabled == 'yes',
-              pinCode: _pinEnabled == 'yes'
-                  ? _pinCtrls.map((c) => c.text).join()
-                  : '',
+              avatar: 'avatar1',
+              currency: 'USD',
+              theme: 'dark',
+              pinEnabled: false,
+              pinCode: '',
             );
         if (mounted) context.go('/auth');
       }
@@ -134,7 +101,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             // Top progress bar (thin, at very top like design)
             LinearProgressIndicator(
-              value: (_step + 1) / 10,
+              value: (_step + 1) / 6,
               backgroundColor: c.border,
               valueColor:
                   const AlwaysStoppedAnimation<Color>(AppColors.primary),
@@ -157,7 +124,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      'Step ${_step + 1} of 10',
+                      'Step ${_step + 1} of 6',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.manrope(
                         color: c.textSecondary,
@@ -185,7 +152,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: ElevatedButton(
                   onPressed: _canContinue
                       ? () {
-                          if (_step < 9) {
+                          if (_step < 5) {
                             setState(() => _step++);
                           } else {
                             _finish();
@@ -208,7 +175,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: Colors.white))
                       : Text(
-                          _step < 9 ? 'Continue' : 'Get Started',
+                          _step < 5 ? 'Continue' : 'Get Started',
                           style: GoogleFonts.manrope(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -255,24 +222,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             selected: _knowsNetWorth,
             onSelect: (v) => setState(() => _knowsNetWorth = v));
       case 5:
-        return _StepCurrency(
-            selected: _currency,
-            onSelect: (v) => setState(() => _currency = v));
-      case 6:
         return _StepName(controller: _nameCtrl);
-      case 7:
-        return _StepAvatar(
-            selected: _avatar,
-            onSelect: (v) => setState(() => _avatar = v));
-      case 8:
-        return _StepTheme(
-            selected: _theme,
-            onSelect: (v) => setState(() => _theme = v));
-      case 9:
-        return _StepPin(
-            selected: _pinEnabled,
-            controllers: _pinCtrls,
-            onSelect: (v) => setState(() => _pinEnabled = v));
       default:
         return const SizedBox();
     }
@@ -561,36 +511,6 @@ class _StepKnowsNetWorth extends StatelessWidget {
   }
 }
 
-class _StepCurrency extends StatelessWidget {
-  final String selected;
-  final ValueChanged<String> onSelect;
-  const _StepCurrency({required this.selected, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    final currencies = [
-      ('USD', 'US Dollar', '🇺🇸'),
-      ('EUR', 'Euro', '🇪🇺'),
-      ('GBP', 'British Pound', '🇬🇧'),
-      ('CAD', 'Canadian Dollar', '🇨🇦'),
-      ('AUD', 'Australian Dollar', '🇦🇺'),
-      ('JPY', 'Japanese Yen', '🇯🇵'),
-    ];
-
-    return _OnboardingStep(
-      title: 'Your currency',
-      subtitle: 'All values will be shown in this currency.',
-      child: Column(
-        children: currencies
-            .map((cur) => _radio(
-                context, '${cur.$1} — ${cur.$2}', cur.$1, selected, onSelect,
-                emoji: cur.$3))
-            .toList(),
-      ),
-    );
-  }
-}
-
 class _StepName extends StatelessWidget {
   final TextEditingController controller;
   const _StepName({required this.controller});
@@ -613,271 +533,3 @@ class _StepName extends StatelessWidget {
   }
 }
 
-class _StepAvatar extends StatelessWidget {
-  final String selected;
-  final ValueChanged<String> onSelect;
-  const _StepAvatar({required this.selected, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    final primary = Theme.of(context).primaryColor;
-    final c = WealthColors.of(context);
-
-    return _OnboardingStep(
-      title: 'Pick your avatar',
-      subtitle: 'Choose how you appear in WealthTrack.',
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: kAvatarList.length,
-        itemBuilder: (_, i) {
-          final av = kAvatarList[i];
-          final isSelected = selected == av.id;
-          return GestureDetector(
-            onTap: () => onSelect(av.id),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? primary.withValues(alpha: 0.15)
-                    : c.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? primary : c.border,
-                  width: isSelected ? 2 : 1,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: Image.asset(
-                      av.path,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: primary.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            av.name[0],
-                            style: TextStyle(
-                                fontSize: 24,
-                                color: primary,
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    av.name.split(' ').first,
-                    style: TextStyle(
-                        color: c.textSecondary, fontSize: 10, fontWeight: FontWeight.w600),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _StepTheme extends StatelessWidget {
-  final String selected;
-  final ValueChanged<String> onSelect;
-  const _StepTheme({required this.selected, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    final themes = [
-      ('dark', 'Dark', const Color(0xFF0F1117), const Color(0xFF1E2026),
-          AppColors.primary),
-      ('light', 'Light', AppColors.backgroundLight, Colors.white,
-          AppColors.primary),
-      ('neon', 'Neon', const Color(0xFF08070F), const Color(0xFF100F1A),
-          const Color(0xFF00FFB3)),
-    ];
-
-    return _OnboardingStep(
-      title: 'App theme',
-      subtitle: 'Choose your preferred look.',
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.3,
-        ),
-        itemCount: themes.length,
-        itemBuilder: (_, i) {
-          final t = themes[i];
-          final isSelected = selected == t.$1;
-          return GestureDetector(
-            onTap: () => onSelect(t.$1),
-            child: Container(
-              decoration: BoxDecoration(
-                color: t.$3,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : t.$5.withValues(alpha: 0.3),
-                  width: isSelected ? 2 : 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: t.$4,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: 18,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: t.$5,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Text(
-                      t.$2,
-                      style: GoogleFonts.manrope(
-                        color: isSelected ? AppColors.primary : Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _StepPin extends StatefulWidget {
-  final String? selected;
-  final List<TextEditingController> controllers;
-  final ValueChanged<String> onSelect;
-  const _StepPin({
-    required this.selected,
-    required this.controllers,
-    required this.onSelect,
-  });
-
-  @override
-  State<_StepPin> createState() => _StepPinState();
-}
-
-class _StepPinState extends State<_StepPin> {
-  final List<FocusNode> _nodes = List.generate(4, (_) => FocusNode());
-
-  @override
-  void dispose() {
-    for (final n in _nodes) {
-      n.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _OnboardingStep(
-      title: 'Set a PIN lock?',
-      subtitle: 'Add an extra layer of security.',
-      child: Column(
-        children: [
-          _radio(context, 'Yes, use PIN lock', 'yes', widget.selected, widget.onSelect,
-              emoji: '🔒'),
-          _radio(context, 'No thanks', 'no', widget.selected, widget.onSelect,
-              emoji: '🚫'),
-          if (widget.selected == 'yes') ...[
-            const SizedBox(height: 24),
-            Text(
-              'Enter your 4-digit PIN',
-              style: GoogleFonts.manrope(
-                  color: WealthColors.of(context).textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (i) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  width: 56,
-                  height: 64,
-                  child: TextField(
-                    controller: widget.controllers[i],
-                    focusNode: _nodes[i],
-                    keyboardType: TextInputType.number,
-                    maxLength: 1,
-                    obscureText: true,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: WealthColors.of(context).border),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: Theme.of(context).primaryColor, width: 2),
-                      ),
-                      filled: true,
-                      fillColor: WealthColors.of(context).surface,
-                    ),
-                    onChanged: (v) {
-                      if (v.isNotEmpty && i < 3) {
-                        _nodes[i + 1].requestFocus();
-                      }
-                      setState(() {});
-                    },
-                  ),
-                );
-              }),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}

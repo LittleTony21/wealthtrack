@@ -117,7 +117,7 @@ class ProfileScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Member',
+                                    profile?.isPremium == true ? 'Member' : 'Free user',
                                     style: GoogleFonts.manrope(
                                         color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
                                   ),

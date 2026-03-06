@@ -12,6 +12,7 @@ import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/bottom_nav.dart';
 import '../widgets/check_in_dialog.dart';
+import '../widgets/milestone_dialog.dart';
 import '../widgets/premium_sheet.dart';
 import '../services/premium_service.dart';
 import '../models/asset.dart';
@@ -52,6 +53,39 @@ class HomeScreen extends ConsumerWidget {
     final netWorth = totalAssets - totalLiabilities;
 
     final profileName = profileAsync.valueOrNull?.userName ?? 'User';
+
+    void _checkMilestones() {
+      final profile = ref.read(profileProvider).valueOrNull;
+      if (profile == null) return;
+      final a = ref.read(assetsProvider).valueOrNull ?? [];
+      final l = ref.read(liabilitiesProvider).valueOrNull ?? [];
+      final nw = a.fold(0.0, (s, x) => s + x.currentValue) -
+          l.fold(0.0, (s, x) => s + x.balance);
+      ref.read(profileProvider.notifier).checkAndAwardMilestones(
+        netWorth: nw,
+        assetCount: a.length,
+        liabilityCount: l.length,
+        streak: profile.streak,
+        isPremium: profile.isPremium,
+        hasUnlockedFeature: profile.unlockedFeatures.isNotEmpty,
+        coins: profile.coins,
+      ).then((earned) {
+        if (earned.isEmpty || !context.mounted) return;
+        for (final m in earned) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('🏆 ${m.name} earned! +${m.coinReward} coin${m.coinReward == 1 ? '' : 's'}'),
+            duration: const Duration(seconds: 3),
+          ));
+        }
+      });
+    }
+
+    ref.listen(assetsProvider, (_, next) {
+      if (next.hasValue) _checkMilestones();
+    });
+    ref.listen(liabilitiesProvider, (_, next) {
+      if (next.hasValue) _checkMilestones();
+    });
 
     // Recent activity — last 3 of assets + liabilities combined
     final recentItems = <({String name, String type, String value, DateTime date})>[];
@@ -118,6 +152,23 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       child: Icon(
                         Icons.lock_rounded,
+                        color: primary,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => showMilestoneDialog(context),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.military_tech_rounded,
                         color: primary,
                         size: 18,
                       ),
@@ -205,11 +256,15 @@ class HomeScreen extends ConsumerWidget {
 
                     const SizedBox(height: 24),
 
-                    _NetWorthChart(
-                      assets: assets,
-                      liabilities: liabilities,
-                      currency: currency,
-                    ),
+                    if (assetsAsync.hasValue && liabsAsync.hasValue)
+                      _NetWorthChart(
+                        assets: assets,
+                        liabilities: liabilities,
+                        currency: currency,
+                        netWorth: netWorth,
+                      )
+                    else
+                      const SizedBox(height: 180),
 
                     const SizedBox(height: 24),
 
@@ -339,11 +394,13 @@ class _NetWorthChart extends ConsumerStatefulWidget {
   final List<Asset> assets;
   final List<Liability> liabilities;
   final String currency;
+  final double netWorth;
 
   const _NetWorthChart({
     required this.assets,
     required this.liabilities,
     required this.currency,
+    required this.netWorth,
   });
 
   @override
@@ -367,27 +424,34 @@ class _NetWorthChartState extends ConsumerState<_NetWorthChart> {
     return '$sym${amount.toStringAsFixed(0)}';
   }
 
-  String _fmtDate(DateTime date) {
-    if (_range == _ChartRange.twelveMonths || _range == _ChartRange.allTime) {
-      return DateFormat('MMM yy').format(date);
-    }
+  String _fmtDate(DateTime date, int totalDays) {
+    if (totalDays >= 365) return DateFormat('MMM yy').format(date);
     return DateFormat('MMM d').format(date);
   }
 
   double _netWorthAt(DateTime t, DateTime now) {
+    // Normalize to date-only (midnight) so that items whose dates carry a
+    // time component (DateTime.now()) are not accidentally excluded from a
+    // chart point that lands at midnight on the same calendar day.
+    final tDay = DateTime(t.year, t.month, t.day);
+
+    // Use each item's CURRENT value/balance (same numbers shown in the header)
+    // filtered by whether the item existed on date t.  This keeps the Y-axis
+    // values consistent with "Your Net Worth" throughout the chart.
     double assetValue = 0;
     for (final a in widget.assets) {
-      if (!a.purchaseDate.isAfter(t)) {
-        final days = t.difference(a.purchaseDate).inDays.toDouble();
-        assetValue += (a.price - a.dailyDepreciation * days).clamp(0.0, a.price);
+      final aDay = DateTime(
+          a.purchaseDate.year, a.purchaseDate.month, a.purchaseDate.day);
+      if (!aDay.isAfter(tDay)) {
+        assetValue += a.currentValue;
       }
     }
     double liabilityValue = 0;
     for (final l in widget.liabilities) {
-      if (!l.dateAdded.isAfter(t)) {
-        final monthsBack = now.difference(t).inDays / 30.0;
-        liabilityValue += (l.balance + l.monthlyPayment * monthsBack)
-            .clamp(0.0, double.infinity);
+      final lDay = DateTime(
+          l.dateAdded.year, l.dateAdded.month, l.dateAdded.day);
+      if (!lDay.isAfter(tDay)) {
+        liabilityValue += l.balance;
       }
     }
     return assetValue - liabilityValue;
@@ -416,7 +480,11 @@ class _NetWorthChartState extends ConsumerState<_NetWorthChart> {
         if (dates.isEmpty) {
           rangeStart = now.subtract(const Duration(days: 30));
         } else {
-          rangeStart = dates.reduce((a, b) => a.isBefore(b) ? a : b);
+          final earliest = dates.reduce((a, b) => a.isBefore(b) ? a : b);
+          // Normalize to midnight — purchaseDate/dateAdded from Firestore may
+          // carry a time component (e.g., 14:30) that makes now.difference()
+          // truncate to 0 days when the earliest item was added today.
+          rangeStart = DateTime(earliest.year, earliest.month, earliest.day);
         }
         final spanDays = now.difference(rangeStart).inDays;
         pointCount = (spanDays / 7).ceil().clamp(2, 52);
@@ -618,7 +686,7 @@ class _NetWorthChartState extends ConsumerState<_NetWorthChart> {
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
                           child: Text(
-                            _fmtDate(date),
+                            _fmtDate(date, totalDays),
                             style: TextStyle(
                                 color: c.textSecondary,
                                 fontSize: 10,
@@ -639,7 +707,7 @@ class _NetWorthChartState extends ConsumerState<_NetWorthChart> {
                       final date = rangeStart
                           .add(Duration(days: s.x.toInt()));
                       return LineTooltipItem(
-                        '${DateFormat('MMM d').format(date)}\n',
+                        '${_fmtDate(date, totalDays)}\n',
                         TextStyle(
                             color: c.textSecondary,
                             fontSize: 11,

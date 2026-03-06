@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../config/theme_colors.dart';
 import '../providers/profile_provider.dart';
 import '../services/premium_service.dart';
+import 'payment_sheet.dart';
 
 void showPremiumSheet(BuildContext context, {String? featureKey}) {
   showModalBottomSheet(
@@ -23,17 +24,19 @@ class _PremiumSheet extends ConsumerStatefulWidget {
 }
 
 class _PremiumSheetState extends ConsumerState<_PremiumSheet> {
-  bool _unlocking = false;
+  String? _unlockingFeature;
 
   Future<void> _unlockWithCoins(String featureKey, int cost) async {
-    setState(() => _unlocking = true);
+    setState(() => _unlockingFeature = featureKey);
     try {
       await ref
           .read(profileProvider.notifier)
           .unlockFeatureWithCoins(featureKey, cost);
-      if (mounted) Navigator.pop(context);
+      // Only close the sheet when in single-feature mode; overview stays open
+      // so the user can see the green checkmark and unlock more features.
+      if (mounted && widget.featureKey != null) Navigator.pop(context);
     } finally {
-      if (mounted) setState(() => _unlocking = false);
+      if (mounted) setState(() => _unlockingFeature = null);
     }
   }
 
@@ -75,9 +78,7 @@ class _PremiumSheetState extends ConsumerState<_PremiumSheet> {
       child: ElevatedButton(
         onPressed: () {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Premium purchase coming soon!')),
-          );
+          showPaymentSheet(context);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFFB340),
@@ -153,6 +154,9 @@ class _PremiumSheetState extends ConsumerState<_PremiumSheet> {
             final name = PremiumFeature.featureNames[f]!;
             final desc = PremiumFeature.featureDescriptions[f]!;
             final cost = PremiumFeature.coinCosts[f]!;
+            final isUnlocked = ref.watch(premiumAccessProvider(f));
+            final hasEnough = coins >= cost;
+            final isThisUnlocking = _unlockingFeature == f;
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
@@ -185,28 +189,51 @@ class _PremiumSheetState extends ConsumerState<_PremiumSheet> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color:
-                          const Color(0xFFFFB340).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                  if (isUnlocked)
+                    const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFF4CAF50), size: 22)
+                  else if (isThisUnlocking)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFFFFB340)),
+                    )
+                  else
+                    GestureDetector(
+                      onTap: hasEnough && _unlockingFeature == null
+                          ? () => _unlockWithCoins(f, cost)
+                          : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: hasEnough
+                              ? const Color(0xFFFFB340).withValues(alpha: 0.12)
+                              : c.border.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.monetization_on_rounded,
+                                color: hasEnough
+                                    ? const Color(0xFFFFB340)
+                                    : c.textSecondary,
+                                size: 12),
+                            const SizedBox(width: 3),
+                            Text('$cost',
+                                style: TextStyle(
+                                    color: hasEnough
+                                        ? const Color(0xFFFFB340)
+                                        : c.textSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.monetization_on_rounded,
-                            color: Color(0xFFFFB340), size: 12),
-                        const SizedBox(width: 3),
-                        Text('$cost',
-                            style: const TextStyle(
-                                color: Color(0xFFFFB340),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             );
@@ -275,7 +302,7 @@ class _PremiumSheetState extends ConsumerState<_PremiumSheet> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: hasEnough && !_unlocking
+            onPressed: hasEnough && _unlockingFeature == null
                 ? () => _unlockWithCoins(featureKey, cost)
                 : null,
             style: ElevatedButton.styleFrom(
@@ -285,7 +312,7 @@ class _PremiumSheetState extends ConsumerState<_PremiumSheet> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
             ),
-            child: _unlocking
+            child: _unlockingFeature == featureKey
                 ? SizedBox(
                     width: 20,
                     height: 20,

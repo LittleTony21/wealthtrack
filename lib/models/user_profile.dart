@@ -13,6 +13,7 @@ class UserProfile {
   final List<String> checkInDates; // all checked-in dates as 'YYYY-MM-DD'
   final bool isPremium;
   final List<String> unlockedFeatures; // coin-unlocked feature keys
+  final List<String> earnedMilestones; // milestone IDs already awarded
 
   const UserProfile({
     required this.id,
@@ -29,6 +30,7 @@ class UserProfile {
     this.checkInDates = const [],
     this.isPremium = false,
     this.unlockedFeatures = const [],
+    this.earnedMilestones = const [],
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,10 @@ class UserProfile {
               ?.map((e) => e as String)
               .toList() ??
           [],
+      earnedMilestones: (json['earned_milestones'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
     );
   }
 
@@ -72,6 +78,7 @@ class UserProfile {
       'check_in_dates': checkInDates,
       'is_premium': isPremium,
       'unlocked_features': unlockedFeatures,
+      'earned_milestones': earnedMilestones,
     };
   }
 
@@ -90,6 +97,7 @@ class UserProfile {
     List<String>? checkInDates,
     bool? isPremium,
     List<String>? unlockedFeatures,
+    List<String>? earnedMilestones,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -106,6 +114,7 @@ class UserProfile {
       checkInDates: checkInDates ?? this.checkInDates,
       isPremium: isPremium ?? this.isPremium,
       unlockedFeatures: unlockedFeatures ?? this.unlockedFeatures,
+      earnedMilestones: earnedMilestones ?? this.earnedMilestones,
     );
   }
 }
