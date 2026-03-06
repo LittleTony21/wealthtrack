@@ -105,7 +105,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
 
             // Content
             Expanded(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
@@ -212,7 +212,7 @@ class _AuthSelectionScreenState extends ConsumerState<AuthSelectionScreen> {
                       ),
                     ],
 
-                    const Spacer(),
+                    const SizedBox(height: 32),
 
                     // Footer
                     Row(
