@@ -8,6 +8,7 @@ class Asset {
   final double price;
   final DateTime purchaseDate;
   final int lifespanYears;
+  final String? iconName;
 
   const Asset({
     required this.id,
@@ -17,6 +18,7 @@ class Asset {
     required this.price,
     required this.purchaseDate,
     required this.lifespanYears,
+    this.iconName,
   });
 
   double get dailyDepreciation => price / (lifespanYears * 365);
@@ -42,6 +44,7 @@ class Asset {
       price: (json['price'] as num).toDouble(),
       purchaseDate: DateTime.parse(json['purchase_date'] as String),
       lifespanYears: (json['lifespan_years'] as num).toInt(),
+      iconName: json['icon_name'] as String?,
     );
   }
 
@@ -54,6 +57,7 @@ class Asset {
       'price': price,
       'purchase_date': purchaseDate.toIso8601String().split('T').first,
       'lifespan_years': lifespanYears,
+      if (iconName != null) 'icon_name': iconName,
     };
   }
 
@@ -67,6 +71,7 @@ class Asset {
       price: (data['price'] as num).toDouble(),
       purchaseDate: (data['purchase_date'] as Timestamp).toDate(),
       lifespanYears: (data['lifespan_years'] as num).toInt(),
+      iconName: data['icon_name'] as String?,
     );
   }
 
@@ -78,6 +83,7 @@ class Asset {
       'price': price,
       'purchase_date': Timestamp.fromDate(purchaseDate),
       'lifespan_years': lifespanYears,
+      if (iconName != null) 'icon_name': iconName,
     };
   }
 
@@ -89,6 +95,7 @@ class Asset {
     double? price,
     DateTime? purchaseDate,
     int? lifespanYears,
+    String? iconName,
   }) {
     return Asset(
       id: id ?? this.id,
@@ -98,6 +105,7 @@ class Asset {
       price: price ?? this.price,
       purchaseDate: purchaseDate ?? this.purchaseDate,
       lifespanYears: lifespanYears ?? this.lifespanYears,
+      iconName: iconName ?? this.iconName,
     );
   }
 

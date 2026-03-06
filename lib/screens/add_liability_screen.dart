@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../config/app_icons.dart';
 import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../models/liability.dart';
@@ -25,10 +25,9 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _balanceCtrl;
   late final TextEditingController _paymentCtrl;
-  late final TextEditingController _rateCtrl;
   late String _category;
   late DateTime _dateAdded;
-  bool _hasInterest = false;
+  String? _selectedIconName;
   bool _loading = false;
   String? _error;
 
@@ -43,11 +42,9 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
         text: l != null ? l.balance.toStringAsFixed(2) : '');
     _paymentCtrl = TextEditingController(
         text: l != null ? l.monthlyPayment.toStringAsFixed(2) : '');
-    _rateCtrl = TextEditingController(
-        text: l != null ? l.interestRate.toStringAsFixed(2) : '');
     _category = l?.category ?? 'credit';
     _dateAdded = l?.dateAdded ?? DateTime.now();
-    _hasInterest = l != null && l.interestRate > 0;
+    _selectedIconName = l?.iconName;
   }
 
   @override
@@ -55,8 +52,180 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
     _nameCtrl.dispose();
     _balanceCtrl.dispose();
     _paymentCtrl.dispose();
-    _rateCtrl.dispose();
     super.dispose();
+  }
+
+  IconData get _categoryDefaultIcon {
+    switch (_category) {
+      case 'mortgage':
+        return Icons.home_work_rounded;
+      case 'auto':
+        return Icons.directions_car_rounded;
+      case 'credit':
+        return Icons.credit_card_rounded;
+      case 'student':
+        return Icons.school_rounded;
+      case 'personal':
+        return Icons.handshake_rounded;
+      default:
+        return Icons.account_balance_rounded;
+    }
+  }
+
+  IconData get _previewIcon {
+    if (_selectedIconName != null && iconNameMap.containsKey(_selectedIconName)) {
+      return iconNameMap[_selectedIconName]!;
+    }
+    return _categoryDefaultIcon;
+  }
+
+  void _showCategoryPicker(BuildContext context, WealthColors c) {
+    final categories = [
+      ('mortgage', 'Mortgage', Icons.home_work_rounded),
+      ('auto', 'Auto Loan', Icons.directions_car_rounded),
+      ('credit', 'Credit Card', Icons.credit_card_rounded),
+      ('student', 'Student Loan', Icons.school_rounded),
+      ('personal', 'Personal Loan', Icons.handshake_rounded),
+      ('other', 'Other', Icons.account_balance_rounded),
+    ];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Category',
+                style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700)),
+            const SizedBox(height: 16),
+            ...categories.map((cat) {
+              final isSelected = _category == cat.$1;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _category = cat.$1;
+                    _selectedIconName = null;
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.danger.withValues(alpha: 0.1)
+                        : c.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? AppColors.danger : c.border,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(cat.$3,
+                          color: isSelected
+                              ? AppColors.danger
+                              : c.textSecondary,
+                          size: 20),
+                      const SizedBox(width: 12),
+                      Text(cat.$2,
+                          style: TextStyle(
+                              color: isSelected
+                                  ? AppColors.danger
+                                  : c.textPrimary,
+                              fontSize: 15,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600)),
+                      const Spacer(),
+                      if (isSelected)
+                        const Icon(Icons.check_rounded,
+                            color: AppColors.danger, size: 18),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showIconPicker(BuildContext context, WealthColors c) {
+    final icons = liabilityCategoryIcons[_category] ?? [];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheet) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Choose Icon',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: icons.map((entry) {
+                      final name = entry['name'] as String;
+                      final icon = entry['icon'] as IconData;
+                      final isSelected = _selectedIconName == name;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() => _selectedIconName = name);
+                          Navigator.pop(ctx);
+                        },
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.danger.withValues(alpha: 0.15)
+                                : c.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected ? AppColors.danger : c.border,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Icon(icon,
+                              color: isSelected ? AppColors.danger : c.textSecondary,
+                              size: 32),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   double get _previewBalance => double.tryParse(_balanceCtrl.text) ?? 0;
@@ -78,9 +247,8 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
         category: _category,
         balance: double.parse(_balanceCtrl.text),
         monthlyPayment: double.parse(_paymentCtrl.text),
-        interestRate:
-            _hasInterest ? (double.tryParse(_rateCtrl.text) ?? 0) : 0,
         dateAdded: _dateAdded,
+        iconName: _selectedIconName,
       );
 
       if (_isEdit) {
@@ -140,15 +308,37 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.danger.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.credit_card_rounded,
-                          color: AppColors.danger, size: 24),
+                    Stack(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppColors.danger.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(_previewIcon,
+                              color: AppColors.danger, size: 24),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => _showIconPicker(context, c),
+                            child: Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: AppColors.danger,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: c.card, width: 1.5),
+                              ),
+                              child: const Icon(Icons.edit_rounded,
+                                  color: Colors.white, size: 9),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -168,7 +358,7 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                           Text(
                             'Repaying ${fmt(_dailyPayment)}/day',
                             style: TextStyle(
-                                color: c.textSecondary, fontSize: 12),
+                                color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -187,7 +377,7 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                         Text(
                           'balance',
                           style: TextStyle(
-                              color: c.textSecondary, fontSize: 10),
+                              color: c.textSecondary, fontSize: 10, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -212,34 +402,42 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
 
               const SizedBox(height: 16),
 
-              DropdownButtonFormField<String>(
-                value: _category,
-                dropdownColor: c.surface,
-                style: TextStyle(color: c.textPrimary),
-                decoration: InputDecoration(
-                  labelText: 'Category',
-                  prefixIcon: Icon(Icons.category_rounded,
-                      color: c.textSecondary, size: 20),
+              // Category
+              GestureDetector(
+                onTap: () => _showCategoryPicker(context, c),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: c.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: c.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.category_rounded,
+                          color: c.textSecondary, size: 20),
+                      const SizedBox(width: 12),
+                      Text(
+                        Liability(
+                                id: '',
+                                userId: '',
+                                name: '',
+                                category: _category,
+                                balance: 0,
+                                monthlyPayment: 0,
+                                dateAdded: DateTime.now())
+                            .categoryLabel,
+                        style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      const Spacer(),
+                      Icon(Icons.chevron_right_rounded,
+                          color: c.textSecondary, size: 20),
+                    ],
+                  ),
                 ),
-                items: Liability.categories.map((cat) {
-                  return DropdownMenuItem(
-                    value: cat,
-                    child: Text(
-                      Liability(
-                              id: '',
-                              userId: '',
-                              name: '',
-                              category: cat,
-                              balance: 0,
-                              monthlyPayment: 0,
-                              interestRate: 0,
-                              dateAdded: DateTime.now())
-                          .categoryLabel,
-                      style: TextStyle(color: WealthColors.of(context).textPrimary),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (v) => setState(() => _category = v!),
               ),
 
 
@@ -282,41 +480,6 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                   return null;
                 },
               ),
-
-              const SizedBox(height: 16),
-
-              // Interest rate toggle
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Has interest rate?',
-                      style: GoogleFonts.manrope(
-                          color: c.textPrimary, fontSize: 14),
-                    ),
-                  ),
-                  Switch(
-                    value: _hasInterest,
-                    onChanged: (v) => setState(() => _hasInterest = v),
-                    activeThumbColor: AppColors.primary,
-                  ),
-                ],
-              ),
-
-              if (_hasInterest) ...[
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _rateCtrl,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  style: TextStyle(color: c.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: 'Interest Rate (%)',
-                    prefixIcon: Icon(Icons.percent_rounded,
-                        color: c.textSecondary, size: 20),
-                  ),
-                ),
-              ],
 
               const SizedBox(height: 16),
 
@@ -375,7 +538,7 @@ class _AddLiabilityScreenState extends ConsumerState<AddLiabilityScreen> {
                   ),
                   child: Text(_error!,
                       style: const TextStyle(
-                          color: AppColors.danger, fontSize: 13)),
+                          color: AppColors.danger, fontSize: 13, fontWeight: FontWeight.w600)),
                 ),
               ],
 

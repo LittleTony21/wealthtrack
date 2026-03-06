@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../config/app_icons.dart';
 import '../config/theme.dart';
 import '../config/theme_colors.dart';
 import '../models/asset.dart';
@@ -25,6 +26,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
   late String _category;
   late DateTime _purchaseDate;
   late int _lifespanYears;
+  String? _selectedIconName;
   bool _loading = false;
   String? _error;
 
@@ -40,6 +42,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
     _category = a?.category ?? 'electronics';
     _purchaseDate = a?.purchaseDate ?? DateTime.now();
     _lifespanYears = a?.lifespanYears ?? 3;
+    _selectedIconName = a?.iconName;
   }
 
   @override
@@ -55,6 +58,170 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
 
   double get _dailyDep =>
       _previewPrice > 0 ? _previewPrice / (_lifespanYears * 365) : 0;
+
+  IconData get _categoryDefaultIcon {
+    switch (_category) {
+      case 'electronics':
+        return Icons.laptop_mac_rounded;
+      case 'vehicle':
+        return Icons.directions_car_rounded;
+      case 'home':
+        return Icons.home_rounded;
+      case 'furniture':
+        return Icons.chair_rounded;
+      case 'appliance':
+        return Icons.kitchen_rounded;
+      default:
+        return Icons.inventory_2_rounded;
+    }
+  }
+
+  IconData get _previewIcon {
+    if (_selectedIconName != null && iconNameMap.containsKey(_selectedIconName)) {
+      return iconNameMap[_selectedIconName]!;
+    }
+    return _categoryDefaultIcon;
+  }
+
+  void _showCategoryPicker(BuildContext context, Color primary, WealthColors c) {
+    final categories = [
+      ('electronics', 'Electronics', Icons.laptop_mac_rounded),
+      ('vehicle', 'Vehicle', Icons.directions_car_rounded),
+      ('home', 'Home', Icons.home_rounded),
+      ('furniture', 'Furniture', Icons.chair_rounded),
+      ('appliance', 'Appliance', Icons.kitchen_rounded),
+      ('other', 'Other', Icons.inventory_2_rounded),
+    ];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Category',
+                style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700)),
+            const SizedBox(height: 16),
+            ...categories.map((cat) {
+              final isSelected = _category == cat.$1;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _category = cat.$1;
+                    _selectedIconName = null;
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected ? primary.withValues(alpha: 0.1) : c.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? primary : c.border,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(cat.$3,
+                          color: isSelected ? primary : c.textSecondary,
+                          size: 20),
+                      const SizedBox(width: 12),
+                      Text(cat.$2,
+                          style: TextStyle(
+                              color: isSelected ? primary : c.textPrimary,
+                              fontSize: 15,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600)),
+                      const Spacer(),
+                      if (isSelected)
+                        Icon(Icons.check_rounded, color: primary, size: 18),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showIconPicker(BuildContext context, Color primary, WealthColors c) {
+    final icons = assetCategoryIcons[_category] ?? [];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheet) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Choose Icon',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: icons.map((entry) {
+                      final name = entry['name'] as String;
+                      final icon = entry['icon'] as IconData;
+                      final isSelected = _selectedIconName == name;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() => _selectedIconName = name);
+                          Navigator.pop(ctx);
+                        },
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? primary.withValues(alpha: 0.15)
+                                : c.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected ? primary : c.border,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Icon(icon, color: isSelected ? primary : c.textSecondary, size: 32),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   double get _currentValue {
     if (_previewPrice <= 0) return 0;
@@ -79,6 +246,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
         price: double.parse(_priceCtrl.text),
         purchaseDate: _purchaseDate,
         lifespanYears: _lifespanYears,
+        iconName: _selectedIconName,
       );
 
       if (_isEdit) {
@@ -138,15 +306,36 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(Icons.inventory_2_rounded,
-                          color: primary, size: 24),
+                    Stack(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(_previewIcon, color: primary, size: 24),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => _showIconPicker(context, primary, c),
+                            child: Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: c.card, width: 1.5),
+                              ),
+                              child: const Icon(Icons.edit_rounded,
+                                  color: Colors.white, size: 9),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -164,7 +353,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                           Text(
                             'costs ${fmt(_dailyDep)}/day',
                             style: TextStyle(
-                                color: c.textSecondary, fontSize: 12),
+                                color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -183,7 +372,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                         Text(
                           'current value',
                           style: TextStyle(
-                              color: c.textSecondary, fontSize: 10),
+                              color: c.textSecondary, fontSize: 10, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -210,33 +399,41 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
               const SizedBox(height: 16),
 
               // Category
-              DropdownButtonFormField<String>(
-                value: _category,
-                dropdownColor: c.surface,
-                style: TextStyle(color: c.textPrimary),
-                decoration: InputDecoration(
-                  labelText: 'Category',
-                  prefixIcon: Icon(Icons.category_rounded,
-                      color: c.textSecondary, size: 20),
+              GestureDetector(
+                onTap: () => _showCategoryPicker(context, primary, c),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: c.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: c.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.category_rounded,
+                          color: c.textSecondary, size: 20),
+                      const SizedBox(width: 12),
+                      Text(
+                        Asset(
+                                id: '',
+                                userId: '',
+                                name: '',
+                                category: _category,
+                                price: 0,
+                                purchaseDate: DateTime.now(),
+                                lifespanYears: 1)
+                            .categoryLabel,
+                        style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      const Spacer(),
+                      Icon(Icons.chevron_right_rounded,
+                          color: c.textSecondary, size: 20),
+                    ],
+                  ),
                 ),
-                items: Asset.categories.map((c) {
-                  return DropdownMenuItem(
-                    value: c,
-                    child: Text(
-                      Asset(
-                              id: '',
-                              userId: '',
-                              name: '',
-                              category: c,
-                              price: 0,
-                              purchaseDate: DateTime.now(),
-                              lifespanYears: 1)
-                          .categoryLabel,
-                      style: TextStyle(color: WealthColors.of(context).textPrimary),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (v) => setState(() => _category = v!),
               ),
 
               const SizedBox(height: 16),
@@ -315,7 +512,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                 children: [
                   Text('Lifespan',
                       style: TextStyle(
-                          color: c.textSecondary, fontSize: 14)),
+                          color: c.textSecondary, fontSize: 14, fontWeight: FontWeight.w600)),
                   Text(
                     '$_lifespanYears ${_lifespanYears == 1 ? 'year' : 'years'}',
                     style: TextStyle(
@@ -354,7 +551,7 @@ class _AddAssetScreenState extends ConsumerState<AddAssetScreen> {
                   ),
                   child: Text(_error!,
                       style: const TextStyle(
-                          color: AppColors.danger, fontSize: 13)),
+                          color: AppColors.danger, fontSize: 13, fontWeight: FontWeight.w600)),
                 ),
               ],
 

@@ -46,6 +46,30 @@ class ProfileNotifier extends StateNotifier<AsyncValue<UserProfile?>> {
         .doc(uid)
         .set(data, SetOptions(merge: true));
   }
+
+  /// Returns true if coin was awarded, false if already checked in today.
+  Future<bool> checkIn() async {
+    final profile = state.valueOrNull;
+    if (uid == null || profile == null) return false;
+
+    final today = _dateStr(DateTime.now());
+    if (profile.lastCheckIn == today) return false;
+
+    final yesterday = _dateStr(DateTime.now().subtract(const Duration(days: 1)));
+    final newStreak = profile.lastCheckIn == yesterday ? profile.streak + 1 : 1;
+    final newDates = [...profile.checkInDates, today];
+
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'coins': profile.coins + 1,
+      'streak': newStreak,
+      'last_check_in': today,
+      'check_in_dates': newDates,
+    });
+    return true;
+  }
+
+  String _dateStr(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
 
 final profileProvider =

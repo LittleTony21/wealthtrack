@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/asset.dart';
+import '../config/app_icons.dart';
 import '../config/theme.dart';
 import '../config/theme_colors.dart';
 
@@ -36,6 +37,10 @@ class _AssetCardState extends State<AssetCard> {
   }
 
   IconData get _icon {
+    final custom = widget.asset.iconName;
+    if (custom != null && iconNameMap.containsKey(custom)) {
+      return iconNameMap[custom]!;
+    }
     switch (widget.asset.category) {
       case 'electronics':
         return Icons.laptop_mac_rounded;
@@ -52,19 +57,11 @@ class _AssetCardState extends State<AssetCard> {
     }
   }
 
-  Color get _healthColor {
-    final p = widget.asset.healthPercent;
-    if (p > 60) return AppColors.primary;
-    if (p > 30) return const Color(0xFFFFB340);
-    return AppColors.danger;
-  }
-
   @override
   Widget build(BuildContext context) {
     final asset = widget.asset;
     final primary = Theme.of(context).primaryColor;
     final c = WealthColors.of(context);
-    final healthPct = (asset.healthPercent / 100).clamp(0.0, 1.0);
 
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
@@ -94,84 +91,41 @@ class _AssetCardState extends State<AssetCard> {
                     child: Icon(_icon, color: primary, size: 24),
                   ),
                   const SizedBox(width: 16),
-                  // Details
+                  // Name + subtitle
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Row 1: name + value
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                asset.name,
-                                style: TextStyle(
-                                  color: c.textPrimary,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _fmt(asset.currentValue),
-                              style: TextStyle(
-                                color: c.textPrimary,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          asset.name,
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
-                        // Row 2: subtitle + progress bar + %
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'costs ${_fmt(asset.dailyDepreciation)}/day',
-                              style: TextStyle(
-                                color: c.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 64,
-                                  height: 6,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(3),
-                                    child: LinearProgressIndicator(
-                                      value: healthPct,
-                                      backgroundColor: c.border,
-                                      valueColor:
-                                          AlwaysStoppedAnimation<Color>(
-                                              _healthColor),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                SizedBox(
-                                  width: 26,
-                                  child: Text(
-                                    '${asset.healthPercent.round()}',
-                                    style: TextStyle(
-                                      color: c.textSecondary,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        const SizedBox(height: 4),
+                        Text(
+                          'costs ${_fmt(asset.dailyDepreciation)}/day',
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Value — right-aligned, vertically centered by Row
+                  Text(
+                    _fmt(asset.currentValue),
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -240,11 +194,11 @@ class _AssetCardState extends State<AssetCard> {
                                   backgroundColor: dc.card,
                                   title: Text('Delete Asset',
                                       style:
-                                          TextStyle(color: dc.textPrimary)),
+                                          TextStyle(color: dc.textPrimary, fontWeight: FontWeight.w600)),
                                   content: Text(
                                     'Delete "${asset.name}"? This cannot be undone.',
                                     style: TextStyle(
-                                        color: dc.textSecondary),
+                                        color: dc.textSecondary, fontWeight: FontWeight.w600),
                                   ),
                                   actions: [
                                     TextButton(
@@ -296,12 +250,12 @@ class _Row extends StatelessWidget {
         children: [
           Text(label,
               style: TextStyle(
-                  color: c.textSecondary, fontSize: 13)),
+                  color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
           Text(value,
               style: TextStyle(
                 color: valueColor ?? c.textPrimary,
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               )),
         ],
       ),

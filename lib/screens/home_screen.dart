@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +11,9 @@ import '../providers/liabilities_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/bottom_nav.dart';
+import '../widgets/check_in_dialog.dart';
 import '../models/asset.dart';
+import '../models/liability.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -101,6 +104,26 @@ class HomeScreen extends ConsumerWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (_) => const CheckInDialog(),
+                    ),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.calendar_today_rounded,
+                        color: primary,
+                        size: 18,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -115,7 +138,7 @@ class HomeScreen extends ConsumerWidget {
                     Text(
                       'Hello, $profileName 👋',
                       style: GoogleFonts.manrope(
-                          color: c.textSecondary, fontSize: 14),
+                          color: c.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -123,7 +146,7 @@ class HomeScreen extends ConsumerWidget {
                       style: GoogleFonts.manrope(
                           color: c.textSecondary,
                           fontSize: 13,
-                          fontWeight: FontWeight.w500),
+                          fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -163,33 +186,10 @@ class HomeScreen extends ConsumerWidget {
 
                     const SizedBox(height: 24),
 
-                    // Mini chart
-                    if (assets.isNotEmpty)
-                      _MiniChart(assets: assets, primary: primary),
-
-                    const SizedBox(height: 24),
-
-                    // Quick actions
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickAction(
-                            icon: Icons.add_circle_rounded,
-                            label: 'Add Asset',
-                            color: primary,
-                            onTap: () => context.push('/add-asset'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _QuickAction(
-                            icon: Icons.add_circle_outline_rounded,
-                            label: 'Add Debt',
-                            color: AppColors.danger,
-                            onTap: () => context.push('/add-liability'),
-                          ),
-                        ),
-                      ],
+                    _NetWorthChart(
+                      assets: assets,
+                      liabilities: liabilities,
+                      currency: currency,
                     ),
 
                     const SizedBox(height: 24),
@@ -291,7 +291,7 @@ class _SummaryCard extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-                color: c.textSecondary, fontSize: 12),
+                color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
@@ -308,45 +308,352 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
+enum _ChartRange { oneMonth, sixMonths, twelveMonths, allTime }
 
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
+typedef _ChartData = ({
+  List<FlSpot> spots,
+  DateTime rangeStart,
+  int totalDays,
+});
+
+class _NetWorthChart extends StatefulWidget {
+  final List<Asset> assets;
+  final List<Liability> liabilities;
+  final String currency;
+
+  const _NetWorthChart({
+    required this.assets,
+    required this.liabilities,
+    required this.currency,
   });
 
   @override
+  State<_NetWorthChart> createState() => _NetWorthChartState();
+}
+
+class _NetWorthChartState extends State<_NetWorthChart> {
+  _ChartRange _range = _ChartRange.oneMonth;
+
+  String _fmtValue(double amount) {
+    final symbols = {
+      'USD': '\$', 'EUR': '€', 'GBP': '£', 'CAD': 'CA\$', 'AUD': 'A\$',
+      'JPY': '¥', 'CHF': 'Fr', 'CNY': '¥', 'INR': '₹', 'MXN': 'MX\$',
+      'BRL': 'R\$', 'KRW': '₩', 'SGD': 'S\$', 'NZD': 'NZ\$', 'NOK': 'kr',
+      'SEK': 'kr', 'DKK': 'kr', 'HKD': 'HK\$', 'ZAR': 'R', 'AED': 'د.إ',
+    };
+    final sym = symbols[widget.currency] ?? widget.currency;
+    final abs = amount.abs();
+    if (abs >= 1000000) return '$sym${(amount / 1000000).toStringAsFixed(1)}M';
+    if (abs >= 1000) return '$sym${(amount / 1000).toStringAsFixed(1)}K';
+    return '$sym${amount.toStringAsFixed(0)}';
+  }
+
+  String _fmtDate(DateTime date) {
+    if (_range == _ChartRange.twelveMonths || _range == _ChartRange.allTime) {
+      return DateFormat('MMM yy').format(date);
+    }
+    return DateFormat('MMM d').format(date);
+  }
+
+  double _netWorthAt(DateTime t, DateTime now) {
+    double assetValue = 0;
+    for (final a in widget.assets) {
+      if (!a.purchaseDate.isAfter(t)) {
+        final days = t.difference(a.purchaseDate).inDays.toDouble();
+        assetValue += (a.price - a.dailyDepreciation * days).clamp(0.0, a.price);
+      }
+    }
+    double liabilityValue = 0;
+    for (final l in widget.liabilities) {
+      if (!l.dateAdded.isAfter(t)) {
+        final monthsBack = now.difference(t).inDays / 30.0;
+        liabilityValue += (l.balance + l.monthlyPayment * monthsBack)
+            .clamp(0.0, double.infinity);
+      }
+    }
+    return assetValue - liabilityValue;
+  }
+
+  _ChartData _buildChartData() {
+    final now = DateTime.now();
+    DateTime rangeStart;
+    int pointCount;
+
+    switch (_range) {
+      case _ChartRange.oneMonth:
+        rangeStart = now.subtract(const Duration(days: 30));
+        pointCount = 31;
+      case _ChartRange.sixMonths:
+        rangeStart = now.subtract(const Duration(days: 180));
+        pointCount = 26;
+      case _ChartRange.twelveMonths:
+        rangeStart = now.subtract(const Duration(days: 365));
+        pointCount = 25;
+      case _ChartRange.allTime:
+        final dates = [
+          ...widget.assets.map((a) => a.purchaseDate),
+          ...widget.liabilities.map((l) => l.dateAdded),
+        ];
+        if (dates.isEmpty) {
+          rangeStart = now.subtract(const Duration(days: 30));
+        } else {
+          rangeStart = dates.reduce((a, b) => a.isBefore(b) ? a : b);
+        }
+        final spanDays = now.difference(rangeStart).inDays;
+        pointCount = (spanDays / 7).ceil().clamp(2, 52);
+    }
+
+    final totalDays = now.difference(rangeStart).inDays.clamp(1, 9999);
+    final spots = <FlSpot>[];
+
+    for (int i = 0; i < pointCount; i++) {
+      // x = actual days from rangeStart → proportional to real time
+      final dayOffset = (totalDays.toDouble() * i / (pointCount - 1)).round();
+      final t = rangeStart.add(Duration(days: dayOffset));
+      spots.add(FlSpot(dayOffset.toDouble(), _netWorthAt(t, now)));
+    }
+
+    return (spots: spots, rangeStart: rangeStart, totalDays: totalDays);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+    final c = WealthColors.of(context);
+    final primary = Theme.of(context).primaryColor;
+    final data = _buildChartData();
+    final spots = data.spots;
+    final rangeStart = data.rangeStart;
+    final totalDays = data.totalDays;
+
+    if (spots.length < 2) return const SizedBox();
+
+    final firstVal = spots.first.y;
+    final lastVal = spots.last.y;
+    final change = lastVal - firstVal;
+    final changePct = firstVal != 0 ? change / firstVal.abs() * 100 : 0.0;
+    final isUp = change >= 0;
+    final lineColor = isUp ? primary : AppColors.danger;
+
+    final minY = spots.map((s) => s.y).reduce((a, b) => a < b ? a : b);
+    final maxY = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final yRange = (maxY - minY).abs().clamp(1.0, double.infinity);
+    final yPad = yRange * 0.2;
+
+    final tabs = [
+      ('1M', _ChartRange.oneMonth),
+      ('6M', _ChartRange.sixMonths),
+      ('12M', _ChartRange.twelveMonths),
+      ('All', _ChartRange.allTime),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border),
+        boxShadow: c.glowShadow(),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title + tabs row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Net Worth',
+                  style: GoogleFonts.manrope(
+                      color: c.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600)),
+              Row(
+                children: tabs.map((tab) {
+                  final isSelected = _range == tab.$2;
+                  return GestureDetector(
+                    onTap: () => setState(() => _range = tab.$2),
+                    child: Container(
+                      margin: const EdgeInsets.only(left: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? lineColor.withValues(alpha: 0.15)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected ? lineColor : c.border,
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Text(tab.$1,
+                          style: TextStyle(
+                              color:
+                                  isSelected ? lineColor : c.textSecondary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Change indicator
+          Row(
+            children: [
+              Text(
+                '${change >= 0 ? '+' : ''}${_fmtValue(change)}',
+                style: GoogleFonts.manrope(
+                    color: lineColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: lineColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${changePct >= 0 ? '+' : ''}${changePct.toStringAsFixed(1)}%',
+                  style: TextStyle(
+                      color: lineColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Chart
+          SizedBox(
+            height: 160,
+            child: LineChart(
+              LineChartData(
+                minX: 0,
+                maxX: totalDays.toDouble(),
+                minY: minY - yPad,
+                maxY: maxY + yPad,
+                clipData: const FlClipData.all(),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: yRange / 3,
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: c.border.withValues(alpha: 0.35),
+                    strokeWidth: 1,
+                    dashArray: [4, 6],
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 22,
+                      interval: totalDays / 2.0,
+                      getTitlesWidget: (value, meta) {
+                        final date = rangeStart
+                            .add(Duration(days: value.toInt()));
+                        return SideTitleWidget(
+                          axisSide: meta.axisSide,
+                          child: Text(
+                            _fmtDate(date),
+                            style: TextStyle(
+                                color: c.textSecondary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => c.surface,
+                    tooltipBorder: BorderSide(color: c.border),
+                    tooltipRoundedRadius: 8,
+                    getTooltipItems: (touchedSpots) =>
+                        touchedSpots.map((s) {
+                      final date = rangeStart
+                          .add(Duration(days: s.x.toInt()));
+                      return LineTooltipItem(
+                        '${DateFormat('MMM d').format(date)}\n',
+                        TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
+                        children: [
+                          TextSpan(
+                            text: _fmtValue(s.y),
+                            style: TextStyle(
+                                color: lineColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                  getTouchedSpotIndicator: (barData, indicators) =>
+                      indicators.map((i) {
+                    return TouchedSpotIndicatorData(
+                      FlLine(
+                          color: lineColor.withValues(alpha: 0.4),
+                          strokeWidth: 1.5,
+                          dashArray: [4, 4]),
+                      FlDotData(
+                        show: true,
+                        getDotPainter: (_, __, ___, ____) =>
+                            FlDotCirclePainter(
+                          radius: 4,
+                          color: lineColor,
+                          strokeWidth: 2,
+                          strokeColor: c.card,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    curveSmoothness: 0.3,
+                    preventCurveOverShooting: true,
+                    color: lineColor,
+                    barWidth: 2.5,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          lineColor.withValues(alpha: 0.2),
+                          lineColor.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -409,7 +716,7 @@ class _ActivityItem extends StatelessWidget {
                 Text(
                   DateFormat('MMM d, yyyy').format(date),
                   style: TextStyle(
-                      color: c.textSecondary, fontSize: 12),
+                      color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -458,6 +765,7 @@ class _EmptyState extends StatelessWidget {
             style: GoogleFonts.manrope(
               color: c.textSecondary,
               fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),
@@ -467,113 +775,3 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _MiniChart extends StatelessWidget {
-  final List<Asset> assets;
-  final Color primary;
-
-  const _MiniChart({required this.assets, required this.primary});
-
-  @override
-  Widget build(BuildContext context) {
-    // Build a simple line chart from asset purchase dates
-    final sorted = [...assets]
-      ..sort((a, b) => a.purchaseDate.compareTo(b.purchaseDate));
-
-    // Accumulate total value over time
-    double running = 0;
-    final points = <double>[];
-    for (final a in sorted) {
-      running += a.currentValue;
-      points.add(running);
-    }
-
-    if (points.length < 2) return const SizedBox();
-
-    final c = WealthColors.of(context);
-    return Container(
-      height: 100,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border),
-        boxShadow: c.glowShadow(),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Asset Growth',
-            style: GoogleFonts.manrope(
-              color: c.textSecondary,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: CustomPaint(
-              painter: _LinePainter(points: points, color: primary),
-              size: Size.infinite,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LinePainter extends CustomPainter {
-  final List<double> points;
-  final Color color;
-
-  _LinePainter({required this.points, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (points.length < 2) return;
-    final minVal = points.reduce((a, b) => a < b ? a : b);
-    final maxVal = points.reduce((a, b) => a > b ? a : b);
-    final range = (maxVal - minVal).clamp(1.0, double.infinity);
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [color.withValues(alpha: 0.3), color.withValues(alpha: 0)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    final fillPath = Path();
-
-    for (int i = 0; i < points.length; i++) {
-      final x = i / (points.length - 1) * size.width;
-      final y = size.height - ((points[i] - minVal) / range * size.height);
-      if (i == 0) {
-        path.moveTo(x, y);
-        fillPath.moveTo(x, size.height);
-        fillPath.lineTo(x, y);
-      } else {
-        path.lineTo(x, y);
-        fillPath.lineTo(x, y);
-      }
-    }
-
-    fillPath.lineTo(size.width, size.height);
-    fillPath.close();
-
-    canvas.drawPath(fillPath, fillPaint);
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_LinePainter old) =>
-      old.points != points || old.color != color;
-}

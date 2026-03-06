@@ -7,8 +7,8 @@ class Liability {
   final String category;
   final double balance;
   final double monthlyPayment;
-  final double interestRate;
   final DateTime dateAdded;
+  final String? iconName;
 
   const Liability({
     required this.id,
@@ -17,8 +17,8 @@ class Liability {
     required this.category,
     required this.balance,
     required this.monthlyPayment,
-    required this.interestRate,
     required this.dateAdded,
+    this.iconName,
   });
 
   double get dailyPayment => monthlyPayment / 30;
@@ -31,8 +31,8 @@ class Liability {
       category: json['category'] as String,
       balance: (json['balance'] as num).toDouble(),
       monthlyPayment: (json['monthly_payment'] as num).toDouble(),
-      interestRate: (json['interest_rate'] as num).toDouble(),
       dateAdded: DateTime.parse(json['date_added'] as String),
+      iconName: json['icon_name'] as String?,
     );
   }
 
@@ -44,8 +44,8 @@ class Liability {
       'category': category,
       'balance': balance,
       'monthly_payment': monthlyPayment,
-      'interest_rate': interestRate,
       'date_added': dateAdded.toIso8601String().split('T').first,
+      if (iconName != null) 'icon_name': iconName,
     };
   }
 
@@ -58,8 +58,8 @@ class Liability {
       category: data['category'] as String,
       balance: (data['balance'] as num).toDouble(),
       monthlyPayment: (data['monthly_payment'] as num).toDouble(),
-      interestRate: (data['interest_rate'] as num).toDouble(),
       dateAdded: (data['date_added'] as Timestamp).toDate(),
+      iconName: data['icon_name'] as String?,
     );
   }
 
@@ -70,8 +70,8 @@ class Liability {
       'category': category,
       'balance': balance,
       'monthly_payment': monthlyPayment,
-      'interest_rate': interestRate,
       'date_added': Timestamp.fromDate(dateAdded),
+      if (iconName != null) 'icon_name': iconName,
     };
   }
 
@@ -82,8 +82,8 @@ class Liability {
     String? category,
     double? balance,
     double? monthlyPayment,
-    double? interestRate,
     DateTime? dateAdded,
+    String? iconName,
   }) {
     return Liability(
       id: id ?? this.id,
@@ -92,8 +92,8 @@ class Liability {
       category: category ?? this.category,
       balance: balance ?? this.balance,
       monthlyPayment: monthlyPayment ?? this.monthlyPayment,
-      interestRate: interestRate ?? this.interestRate,
       dateAdded: dateAdded ?? this.dateAdded,
+      iconName: iconName ?? this.iconName,
     );
   }
 

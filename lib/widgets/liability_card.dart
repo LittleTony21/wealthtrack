@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/liability.dart';
+import '../config/app_icons.dart';
 import '../config/theme.dart';
 import '../config/theme_colors.dart';
 
@@ -36,6 +37,10 @@ class _LiabilityCardState extends State<LiabilityCard> {
   }
 
   IconData get _icon {
+    final custom = widget.liability.iconName;
+    if (custom != null && iconNameMap.containsKey(custom)) {
+      return iconNameMap[custom]!;
+    }
     switch (widget.liability.category) {
       case 'mortgage':
         return Icons.home_work_rounded;
@@ -57,10 +62,6 @@ class _LiabilityCardState extends State<LiabilityCard> {
     final liability = widget.liability;
     final primary = Theme.of(context).primaryColor;
     final c = WealthColors.of(context);
-
-    // Display progress as how manageable the interest rate is (lower is better)
-    final paidRatio = (1.0 - (liability.interestRate / 30.0).clamp(0.0, 1.0));
-    final displayPct = (paidRatio * 100).round();
 
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
@@ -90,84 +91,41 @@ class _LiabilityCardState extends State<LiabilityCard> {
                     child: Icon(_icon, color: AppColors.danger, size: 24),
                   ),
                   const SizedBox(width: 16),
-                  // Details
+                  // Name + subtitle
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Row 1: name + balance
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                liability.name,
-                                style: TextStyle(
-                                  color: c.textPrimary,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _fmt(liability.balance),
-                              style: TextStyle(
-                                color: c.textPrimary,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          liability.name,
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
-                        // Row 2: subtitle + progress bar + %
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Repaying ${_fmt(liability.dailyPayment)}/day',
-                              style: TextStyle(
-                                color: c.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 64,
-                                  height: 6,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(3),
-                                    child: LinearProgressIndicator(
-                                      value: paidRatio.clamp(0.0, 1.0),
-                                      backgroundColor: c.border,
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
-                                              AppColors.danger),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                SizedBox(
-                                  width: 26,
-                                  child: Text(
-                                    '$displayPct',
-                                    style: TextStyle(
-                                      color: c.textSecondary,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        const SizedBox(height: 4),
+                        Text(
+                          'Repaying ${_fmt(liability.dailyPayment)}/day',
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Balance — right-aligned, vertically centered by Row
+                  Text(
+                    _fmt(liability.balance),
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -190,8 +148,6 @@ class _LiabilityCardState extends State<LiabilityCard> {
                     _Row('Balance', _fmt(liability.balance),
                         valueColor: AppColors.danger),
                     _Row('Monthly Payment', _fmt(liability.monthlyPayment)),
-                    _Row('Interest Rate',
-                        '${liability.interestRate.toStringAsFixed(2)}%'),
                     _Row(
                       'Date Added',
                       DateFormat('MMM d, yyyy').format(liability.dateAdded),
@@ -238,11 +194,11 @@ class _LiabilityCardState extends State<LiabilityCard> {
                                   backgroundColor: dc.card,
                                   title: Text('Delete Liability',
                                       style:
-                                          TextStyle(color: dc.textPrimary)),
+                                          TextStyle(color: dc.textPrimary, fontWeight: FontWeight.w600)),
                                   content: Text(
                                     'Delete "${liability.name}"? This cannot be undone.',
                                     style: TextStyle(
-                                        color: dc.textSecondary),
+                                        color: dc.textSecondary, fontWeight: FontWeight.w600),
                                   ),
                                   actions: [
                                     TextButton(
@@ -294,12 +250,12 @@ class _Row extends StatelessWidget {
         children: [
           Text(label,
               style: TextStyle(
-                  color: c.textSecondary, fontSize: 13)),
+                  color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
           Text(value,
               style: TextStyle(
                 color: valueColor ?? c.textPrimary,
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               )),
         ],
       ),
