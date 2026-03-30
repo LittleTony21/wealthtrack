@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1048306200234",
+    "project_id": "comp4521-b7ca2",
+    "storage_bucket": "comp4521-b7ca2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048306200234:android:dd0b618b752e6cd47a2ad3",
+        "android_client_info": {
+          "package_name": "com.wealthtrack.wealthtrack_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048306200234-qsev4e2nk8cqo1fm6f1mctj8sqnh5tmm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUhTTGQEy2ks5Be2p6pxXjiSIIsoNcqMY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048306200234-qsev4e2nk8cqo1fm6f1mctj8sqnh5tmm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
